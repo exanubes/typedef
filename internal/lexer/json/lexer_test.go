@@ -11,7 +11,9 @@ func TestNextToken(test *testing.T) {
 	{
 	"boolean": true,
 	"array": ["item1", "item2"],
-	"no_value": null
+	"no_value": null,
+	"integer": 69420,
+	"negative": -69420
 	}`
 
 	tests := []struct {
@@ -34,6 +36,15 @@ func TestNextToken(test *testing.T) {
 		{domain.STRING, "no_value"},
 		{domain.COLON, ":"},
 		{domain.NULL, "null"},
+		{domain.COMMA, ","},
+		{domain.STRING, "integer"},
+		{domain.COLON, ":"},
+		{domain.NUMBER, "69420"},
+		{domain.COMMA, ","},
+		{domain.STRING, "negative"},
+		{domain.COLON, ":"},
+		{domain.MINUS, "-"},
+		{domain.NUMBER, "69420"},
 		{domain.RBRACE, "}"},
 		{domain.EOF, ""},
 	}

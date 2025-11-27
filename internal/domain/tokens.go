@@ -11,18 +11,18 @@ const (
 	ILLEGAL  = "ILLEGAL"
 	EOF      = "EOF"
 	IDENT    = "IDENT"
+	NUMBER   = "NUMBER"
+	STRING   = "STRING"
+	TRUE     = "TRUE"
+	FALSE    = "FALSE"
+	NULL     = "NULL"
 	LBRACE   = "{"
 	RBRACE   = "}"
 	LBRACKET = "["
 	RBRACKET = "]"
-	COMMA    = ","
-	INT      = "INT"
-	COLON    = ":"
-	STRING   = "STRING"
+	COMMA    = "," //DELIMITER?
+	COLON    = ":" //ASSIGN?
 	MINUS    = "-"
-	TRUE     = "TRUE"
-	FALSE    = "FALSE"
-	NULL     = "NULL"
 )
 
 var keywords = map[string]TokenType{

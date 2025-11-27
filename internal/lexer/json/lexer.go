@@ -36,6 +36,8 @@ func (lexer *Lexer) NextToken() domain.Token {
 		token = domain.NewToken(domain.RBRACKET, lexer.character)
 	case ',':
 		token = domain.NewToken(domain.COMMA, lexer.character)
+	case '-':
+		token = domain.NewToken(domain.MINUS, lexer.character)
 	case '"':
 		token.Type = domain.STRING
 		token.Literal = lexer.read_string()
@@ -46,6 +48,10 @@ func (lexer *Lexer) NextToken() domain.Token {
 		if lexer.is_letter(lexer.character) {
 			token.Literal = lexer.read_identifier()
 			token.Type = domain.LookupIdentifier(token.Literal)
+			return token
+		} else if lexer.is_digit(lexer.character) {
+			token.Literal = lexer.read_number()
+			token.Type = domain.NUMBER
 			return token
 		} else {
 			token = domain.NewToken(domain.ILLEGAL, lexer.character)
@@ -97,4 +103,19 @@ func (lexer *Lexer) read_string() string {
 	}
 
 	return lexer.input[position:lexer.position]
+}
+
+func (lexer *Lexer) is_digit(character byte) bool {
+	return '0' <= character && character <= '9'
+}
+
+func (lexer *Lexer) read_number() string {
+	position := lexer.position
+
+	for lexer.is_digit(lexer.character) {
+		lexer.read_next_character()
+	}
+
+	return lexer.input[position:lexer.position]
+
 }
