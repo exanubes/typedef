@@ -51,7 +51,11 @@ func (lexer *Lexer) NextToken() domain.Token {
 			return token
 		} else if lexer.is_digit(lexer.character) {
 			token.Literal = lexer.read_number()
-			token.Type = domain.NUMBER
+			if lexer.is_valid_number(token.Literal) {
+				token.Type = domain.NUMBER
+			} else {
+				token.Type = domain.ILLEGAL
+			}
 			return token
 		} else {
 			token = domain.NewToken(domain.ILLEGAL, lexer.character)
@@ -115,11 +119,84 @@ func (lexer *Lexer) is_digit(character byte) bool {
 
 func (lexer *Lexer) read_number() string {
 	position := lexer.position
-	isFloat := false
-	isExponential := false
-	for lexer.is_digit(lexer.character) || !isFloat && lexer.character == '.' || !isExponential && (lexer.character == 'e' || lexer.character == 'E') {
+
+	// Read integer part
+	for lexer.is_digit(lexer.character) {
 		lexer.read_next_character()
 	}
 
+	// Handle decimal point and fractional part
+	if lexer.character == '.' {
+		lexer.read_next_character()
+
+		// Read any digits after decimal point (even if none)
+		for lexer.is_digit(lexer.character) {
+			lexer.read_next_character()
+		}
+	}
+
+	// Handle exponential notation
+	if lexer.character == 'e' || lexer.character == 'E' {
+		lexer.read_next_character()
+
+		// Handle optional sign
+		if lexer.character == '+' || lexer.character == '-' {
+			lexer.read_next_character()
+		}
+
+		// Read any digits after exponent (even if none)
+		for lexer.is_digit(lexer.character) {
+			lexer.read_next_character()
+		}
+	}
+
 	return lexer.input[position:lexer.position]
+}
+
+func (lexer *Lexer) is_valid_number(number string) bool {
+	if len(number) == 0 {
+		return false
+	}
+
+	i := 0
+
+	// Must start with at least one digit
+	if !lexer.is_digit(number[i]) {
+		return false
+	}
+
+	// Read integer part
+	for i < len(number) && lexer.is_digit(number[i]) {
+		i++
+	}
+
+	// Handle decimal part
+	if i < len(number) && number[i] == '.' {
+		i++
+		// Must have at least one digit after decimal point
+		if i >= len(number) || !lexer.is_digit(number[i]) {
+			return false
+		}
+		for i < len(number) && lexer.is_digit(number[i]) {
+			i++
+		}
+	}
+
+	// Handle exponential part
+	if i < len(number) && (number[i] == 'e' || number[i] == 'E') {
+		i++
+		// Handle optional sign
+		if i < len(number) && (number[i] == '+' || number[i] == '-') {
+			i++
+		}
+		// Must have at least one digit after exponent
+		if i >= len(number) || !lexer.is_digit(number[i]) {
+			return false
+		}
+		for i < len(number) && lexer.is_digit(number[i]) {
+			i++
+		}
+	}
+
+	return i == len(number)
 }

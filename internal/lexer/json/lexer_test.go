@@ -6,6 +6,68 @@ import (
 	"github.com/exanubes/typedef/internal/domain"
 )
 
+func TestNumberParsing(test *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+		name     string
+	}{
+		{"123", "123", "simple integer"},
+		{"0", "0", "zero"},
+		{"3.14159", "3.14159", "decimal number"},
+		{"1e10", "1e10", "exponential notation"},
+		{"1E10", "1E10", "exponential notation uppercase"},
+		{"1e+5", "1e+5", "exponential with positive sign"},
+		{"1e-5", "1e-5", "exponential with negative sign"},
+		{"123.456e-10", "123.456e-10", "complex exponential"},
+		{"0.5", "0.5", "decimal less than one"},
+		{"42E+3", "42E+3", "exponential with plus sign uppercase"},
+	}
+
+	for _, tc := range testCases {
+		test.Run(tc.name, func(t *testing.T) {
+			lexer := New(tc.input)
+			token := lexer.NextToken()
+
+			if token.Type != domain.NUMBER {
+				t.Errorf("Expected token type NUMBER, got %v", token.Type)
+			}
+
+			if token.Literal != tc.expected {
+				t.Errorf("Expected literal %q, got %q", tc.expected, token.Literal)
+			}
+		})
+	}
+}
+
+func TestMalformedNumbers(test *testing.T) {
+	testCases := []struct {
+		input       string
+		expectedLit string
+		name        string
+	}{
+		{"1.", "1.", "decimal without fractional part"},
+		{"1e", "1e", "exponential without exponent"},
+		{"1e+", "1e+", "exponential with sign but no digits"},
+		{"1E-", "1E-", "exponential with negative sign but no digits"},
+	}
+
+	for _, tc := range testCases {
+		test.Run(tc.name, func(t *testing.T) {
+			lexer := New(tc.input)
+			token := lexer.NextToken()
+
+			if token.Type != domain.ILLEGAL {
+				t.Errorf("Expected token type ILLEGAL, got %v", token.Type)
+			}
+
+			if token.Literal != tc.expectedLit {
+				t.Errorf("Expected literal %q, got %q", tc.expectedLit, token.Literal)
+			}
+		})
+	}
+}
+
 func TestNextToken(test *testing.T) {
 	input := `
 	{
