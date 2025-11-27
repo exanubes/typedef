@@ -1,6 +1,8 @@
 package json
 
 import (
+	"fmt"
+
 	"github.com/exanubes/typedef/internal/domain"
 )
 
@@ -37,7 +39,18 @@ func (lexer *Lexer) NextToken() domain.Token {
 	case ',':
 		token = domain.NewToken(domain.COMMA, lexer.character)
 	case '-':
-		token = domain.NewToken(domain.MINUS, lexer.character)
+		if lexer.is_digit(lexer.peek_next_character()) {
+			lexer.read_next_character()
+			token.Literal = fmt.Sprintf("-%s", lexer.read_number())
+			if lexer.is_valid_number(token.Literal) {
+				token.Type = domain.NUMBER
+			} else {
+				token.Type = domain.ILLEGAL
+			}
+			return token
+		} else {
+			token = domain.NewToken(domain.ILLEGAL, lexer.character)
+		}
 	case '"':
 		token.Type = domain.STRING
 		token.Literal = lexer.read_string()
@@ -103,7 +116,7 @@ func (lexer *Lexer) read_string() string {
 		lexer.read_next_character()
 		if lexer.character == '\\' {
 			lexer.read_next_character()
-			lexer.read_next_character()
+			continue
 		}
 		if lexer.character == '"' || lexer.character == 0 {
 			break
@@ -129,7 +142,6 @@ func (lexer *Lexer) read_number() string {
 	if lexer.character == '.' {
 		lexer.read_next_character()
 
-		// Read any digits after decimal point (even if none)
 		for lexer.is_digit(lexer.character) {
 			lexer.read_next_character()
 		}
@@ -144,7 +156,6 @@ func (lexer *Lexer) read_number() string {
 			lexer.read_next_character()
 		}
 
-		// Read any digits after exponent (even if none)
 		for lexer.is_digit(lexer.character) {
 			lexer.read_next_character()
 		}
@@ -159,7 +170,9 @@ func (lexer *Lexer) is_valid_number(number string) bool {
 	}
 
 	i := 0
-
+	if number[0] == '-' {
+		i += 1
+	}
 	// Must start with at least one digit
 	if !lexer.is_digit(number[i]) {
 		return false
@@ -199,4 +212,8 @@ func (lexer *Lexer) is_valid_number(number string) bool {
 	}
 
 	return i == len(number)
+}
+
+func (lexer *Lexer) peek_next_character() byte {
+	return lexer.input[lexer.read_position]
 }

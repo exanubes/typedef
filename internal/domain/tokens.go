@@ -22,7 +22,6 @@ const (
 	RBRACKET = "]"
 	COMMA    = "," //DELIMITER?
 	COLON    = ":" //ASSIGN?
-	MINUS    = "-"
 )
 
 var keywords = map[string]TokenType{
