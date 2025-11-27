@@ -13,7 +13,12 @@ func TestNextToken(test *testing.T) {
 	"array": ["item1", "item2"],
 	"no_value": null,
 	"integer": 69420,
-	"negative": -69420
+	"negative": -69420,
+	"string_spaced": "hello world",
+	"string_escaped": "hello \"escaped\" world",
+	"float": 3.14159,
+	"exponential": 1e10,
+	"neg_float": -12.75
 	}`
 
 	tests := []struct {
@@ -45,6 +50,27 @@ func TestNextToken(test *testing.T) {
 		{domain.COLON, ":"},
 		{domain.MINUS, "-"},
 		{domain.NUMBER, "69420"},
+		{domain.COMMA, ","},
+		{domain.STRING, "string_spaced"},
+		{domain.COLON, ":"},
+		{domain.STRING, "hello world"},
+		{domain.COMMA, ","},
+		{domain.STRING, "string_escaped"},
+		{domain.COLON, ":"},
+		{domain.STRING, "hello \\\"escaped\\\" world"}, // literal should match lexer output
+		{domain.COMMA, ","},
+		{domain.STRING, "float"},
+		{domain.COLON, ":"},
+		{domain.NUMBER, "3.14159"},
+		{domain.COMMA, ","},
+		{domain.STRING, "exponential"},
+		{domain.COLON, ":"},
+		{domain.NUMBER, "1e10"},
+		{domain.COMMA, ","},
+		{domain.STRING, "neg_float"},
+		{domain.COLON, ":"},
+		{domain.MINUS, "-"},
+		{domain.NUMBER, "12.75"},
 		{domain.RBRACE, "}"},
 		{domain.EOF, ""},
 	}

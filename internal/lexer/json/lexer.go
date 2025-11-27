@@ -97,6 +97,10 @@ func (lexer *Lexer) read_string() string {
 	position := lexer.position + 1
 	for {
 		lexer.read_next_character()
+		if lexer.character == '\\' {
+			lexer.read_next_character()
+			lexer.read_next_character()
+		}
 		if lexer.character == '"' || lexer.character == 0 {
 			break
 		}
@@ -111,11 +115,11 @@ func (lexer *Lexer) is_digit(character byte) bool {
 
 func (lexer *Lexer) read_number() string {
 	position := lexer.position
-
-	for lexer.is_digit(lexer.character) {
+	isFloat := false
+	isExponential := false
+	for lexer.is_digit(lexer.character) || !isFloat && lexer.character == '.' || !isExponential && (lexer.character == 'e' || lexer.character == 'E') {
 		lexer.read_next_character()
 	}
 
 	return lexer.input[position:lexer.position]
-
 }
