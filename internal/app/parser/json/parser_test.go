@@ -8,9 +8,9 @@ import (
 
 func TestNextToken(test *testing.T) {
 	input := `
-	{
+	[{
 	"property": true
-	}`
+	}]`
 
 	lexer := json.New(input)
 	parser := New(lexer)

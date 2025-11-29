@@ -53,12 +53,12 @@ func (parser *AstParser) next_token() {
 	parser.next = parser.lexer.NextToken()
 }
 
-func (parser *AstParser) parse_object() ast.ObjectNode {
+func (parser *AstParser) parse_object() *ast.ObjectNode {
 	var result ast.ObjectNode
 	switch parser.current.Type {
 	case domain.RBRACE:
-		return result
-	case domain.STRING:
+		return &result
+	case domain.STRING: // NOTE: only string can be a key
 		result.Pairs = append(result.Pairs, parser.create_pair_node())
 		for parser.current.Type == domain.COMMA {
 			parser.next_token()
@@ -72,7 +72,7 @@ func (parser *AstParser) parse_object() ast.ObjectNode {
 		log.Fatalf("Expected }, received %s", parser.current.Literal)
 	}
 
-	return result
+	return &result
 }
 
 func (parser *AstParser) create_pair_node() *ast.PairNode {
@@ -96,9 +96,9 @@ func (parser *AstParser) create_pair_node() *ast.PairNode {
 	case domain.STRING:
 		result.Value = parser.create_string_node()
 	case domain.TRUE, domain.FALSE:
-		result.Value = &ast.BooleanNode{Value: parser.current.Literal}
+		result.Value = parser.create_boolean_node()
 	case domain.NULL:
-		result.Value = &ast.NullNode{}
+		result.Value = parser.create_null_node()
 	default:
 		log.Fatalf("Unexpected token: %s", parser.current.Literal)
 	}
@@ -106,9 +106,63 @@ func (parser *AstParser) create_pair_node() *ast.PairNode {
 	return &result
 }
 
-func (parser *AstParser) parse_array() ast.ArrayNode {
+func (parser *AstParser) parse_array() *ast.ArrayNode {
 	var result ast.ArrayNode
-	return result
+
+	if parser.current.Type == domain.RBRACKET {
+		return &result
+	}
+
+	result.Elements = append(result.Elements, parser.parse_array_item())
+
+	for parser.current.Type == domain.COMMA {
+		parser.next_token()
+		result.Elements = append(result.Elements, parser.parse_array_item())
+	}
+
+	if parser.current.Type != domain.RBRACKET {
+		log.Fatalf("Expected ], received %s", parser.current.Literal)
+	}
+
+	parser.next_token()
+
+	return &result
+}
+
+func (parser *AstParser) parse_array_item() ast.Node {
+	var node ast.Node
+	switch parser.current.Type {
+	case domain.LBRACE:
+		parser.next_token()
+		node = parser.parse_object()
+	case domain.LBRACKET:
+		parser.next_token()
+		node = parser.parse_array()
+	case domain.NUMBER:
+		node = parser.create_number_node()
+	case domain.STRING:
+		node = parser.create_string_node()
+	case domain.TRUE, domain.FALSE:
+		node = parser.create_boolean_node()
+	case domain.NULL:
+		node = parser.create_null_node()
+	default:
+		log.Fatalf("Unexpected Token: %s", parser.current.Literal)
+	}
+
+	parser.next_token()
+
+	return node
+}
+
+func (parser *AstParser) create_boolean_node() *ast.BooleanNode {
+	var result ast.BooleanNode
+	result.Value = parser.current.Literal
+	return &result
+}
+
+func (parser *AstParser) create_null_node() *ast.NullNode {
+	return &ast.NullNode{}
 }
 
 func (parser *AstParser) create_string_node() *ast.StringNode {

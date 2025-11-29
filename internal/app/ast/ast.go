@@ -29,7 +29,7 @@ type ArrayNode struct {
 }
 
 func (node ArrayNode) String() string {
-	return ""
+	return "[array Array]"
 }
 
 type StringNode struct {
