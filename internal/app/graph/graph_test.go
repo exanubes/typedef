@@ -1,14 +1,35 @@
 package graph
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/exanubes/typedef/internal/app/ast"
 	"github.com/exanubes/typedef/internal/app/lexer/json"
 	parser "github.com/exanubes/typedef/internal/app/parser/json"
 	"github.com/exanubes/typedef/internal/domain"
 )
+
+func TestCanonicalSerialization(test *testing.T) {
+	input := `
+	{
+	"bool": true,
+	"int": 69420,
+	"float": 69.420,
+	"varchar": "hello world",
+	"simple": [1,2,3],
+	"mixed": [69.420, 69, 420, "hello", "there", true, false]
+	}`
+	expected := "object{bool:boolean,float:float,int:int,mixed:array<union<boolean|float|int|string>>,simple:array<int>,varchar:string}"
+	lexer := json.New(input)
+	parser := parser.New(lexer)
+
+	program := parser.Parse()
+
+	graph := Generate(program)
+
+	if result := graph.Canonical(); result != expected {
+		test.Fatalf("Expected %s, received: %s", expected, result)
+	}
+}
 
 func TestGraphTypeNodes(test *testing.T) {
 	input := `
@@ -23,9 +44,7 @@ func TestGraphTypeNodes(test *testing.T) {
 	parser := parser.New(lexer)
 
 	program := parser.Parse()
-	fmt.Printf("PROGRAM: %+v\n", *(program.Value.(*ast.ObjectNode)))
 	graph := Generate(program)
-	fmt.Printf("Graph: %+v\n", graph)
 	testcases := []struct {
 		property     string
 		expectedType string
