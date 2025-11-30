@@ -48,7 +48,8 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 	{
 	"list": [1,2,3],
 	"union": [1, "2", true],
-	"numbers": [69420, 69.420]
+	"numbers": [69420, 69.420],
+	"empty": []
 	}`
 
 	lexer := json.New(input)
@@ -64,6 +65,7 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 		{"list", "array"},
 		{"union", "array"},
 		{"numbers", "array"},
+		{"empty", "array"},
 	}
 
 	for index, tc := range testcases {
@@ -109,5 +111,11 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 	}
 	if union.OneOf[1].Name() != (domain.FloatType{}).Name() {
 		test.Fatalf("Wrong union[1] type expected %s, received %s", (domain.FloatType{}).Name(), numbers_array.Element.Name())
+	}
+
+	empty_array := graph.Fields["empty"].(domain.ArrayType)
+
+	if empty_array.Element.Name() != (domain.UnknownType{}).Name() {
+		test.Fatalf("Wrong array element type expected %s, received %s", (domain.UnknownType{}).Name(), empty_array.Element.Name())
 	}
 }

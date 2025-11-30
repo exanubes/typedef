@@ -40,10 +40,15 @@ func parse_value(node ast.Node) domain.Type {
 		//TODO: build a named node and compare with existing named nodes and dedup
 	case *ast.ArrayNode:
 		types_map := map[string]domain.Type{}
+		if len(node.Elements) == 0 {
+			return domain.ArrayType{Element: domain.UnknownType{}}
+		}
+
 		for _, element := range node.Elements {
 			value := parse_value(element)
 			types_map[value.Name()] = value
 		}
+
 		types := maps.Values(types_map)
 		if len(types) > 1 {
 			result = domain.ArrayType{Element: domain.UnionType{OneOf: types}}
