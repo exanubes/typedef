@@ -19,8 +19,6 @@ func TestNextToken(test *testing.T) {
 
 	program := parser.Parse()
 
-	print("object", program.Value.String())
-
 	array, ok := program.Value.(*ast.ArrayNode)
 
 	if !ok {
@@ -41,20 +39,20 @@ func TestNextToken(test *testing.T) {
 		test.Fatalf("expected object to have 2 key/value pairs, received %d", len(object.Pairs))
 	}
 
-	if object.Pairs[0].Key.String() != "property" {
-		test.Fatalf("expected property, received %s", object.Pairs[0].Key.String())
+	if object.Pairs[0].Key.Literal() != "property" {
+		test.Fatalf("expected property, received %s", object.Pairs[0].Key.Literal())
 	}
 
-	if object.Pairs[0].Value.String() != "true" {
-		test.Fatalf("expected true, received %s", object.Pairs[0].Value.String())
+	if object.Pairs[0].Value.Literal() != "true" {
+		test.Fatalf("expected true, received %s", object.Pairs[0].Value.Literal())
 	}
 
-	if object.Pairs[1].Key.String() != "prop1" {
-		test.Fatalf("expected property, received %s", object.Pairs[0].Key.String())
+	if object.Pairs[1].Key.Literal() != "prop1" {
+		test.Fatalf("expected property, received %s", object.Pairs[0].Key.Literal())
 	}
 
-	if object.Pairs[1].Value.String() != "null" {
-		test.Fatalf("expected true, received %s", object.Pairs[0].Value.String())
+	if object.Pairs[1].Value.Literal() != "null" {
+		test.Fatalf("expected true, received %s", object.Pairs[0].Value.Literal())
 	}
 
 }
