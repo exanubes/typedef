@@ -1,5 +1,7 @@
 package ast
 
+import "fmt"
+
 type Node interface {
 	String() string
 }
@@ -16,7 +18,13 @@ type ObjectNode struct {
 }
 
 func (node ObjectNode) String() string {
-	return "{}"
+	pairs := []PairNode{}
+
+	for _, pair := range node.Pairs {
+		pairs = append(pairs, *pair)
+	}
+
+	return fmt.Sprintf("%+v", pairs)
 }
 
 type PairNode struct {
