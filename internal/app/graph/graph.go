@@ -1,27 +1,43 @@
 package graph
 
 import (
-	"golang.org/x/exp/maps"
 	"log"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/exanubes/typedef/internal/app/ast"
+	"github.com/exanubes/typedef/internal/app/dedup"
 	"github.com/exanubes/typedef/internal/domain"
 )
 
-func Generate(tree *ast.Program) domain.ObjectType {
-	result := domain.ObjectType{Fields: make(map[string]domain.Type)}
+type Graph struct {
+	type_pool dedup.Engine
+}
+
+var _ TypeGraph = (*Graph)(nil)
+
+func New(type_pool dedup.Engine) *Graph {
+	return &Graph{type_pool: type_pool}
+}
+
+func (graph *Graph) Generate(tree *ast.Program) *domain.ObjectType {
 	switch node := tree.Value.(type) {
 	case *ast.ObjectNode:
-		for _, pair := range node.Pairs {
-			result.Fields[pair.Key.Value] = parse_value(pair.Value)
-		}
+		return graph.parse_object(node)
 	default:
 		log.Fatalf("@@ Invalid node %+v", node)
 	}
-	return result
+	return nil
 }
 
-func parse_value(node ast.Node) domain.Type {
+func (graph *Graph) parse_object(node *ast.ObjectNode) *domain.ObjectType {
+	result := domain.ObjectType{Fields: make(map[string]domain.Type)}
+	for _, pair := range node.Pairs {
+		result.Fields[pair.Key.Value] = graph.parse_value(pair.Value)
+	}
+	return &result
+}
+func (graph *Graph) parse_value(node ast.Node) domain.Type {
 	var result domain.Type
 	switch node := node.(type) {
 	case *ast.StringNode:
@@ -37,7 +53,16 @@ func parse_value(node ast.Node) domain.Type {
 	case *ast.BooleanNode:
 		result = domain.BooleanType{}
 	case *ast.ObjectNode:
-		//TODO: build a named node and compare with existing named nodes and dedup
+		object_type := graph.parse_object(node)
+		named_type := graph.type_pool.Get(object_type)
+		if named_type != nil {
+			return named_type
+		}
+
+		named_type = &domain.NamedType{Identity: object_type}
+		graph.type_pool.Add(named_type)
+
+		return named_type
 	case *ast.ArrayNode:
 		types_map := map[string]domain.Type{}
 		if len(node.Elements) == 0 {
@@ -45,7 +70,7 @@ func parse_value(node ast.Node) domain.Type {
 		}
 
 		for _, element := range node.Elements {
-			value := parse_value(element)
+			value := graph.parse_value(element)
 			types_map[value.Name()] = value
 		}
 

@@ -3,6 +3,7 @@ package graph
 import (
 	"testing"
 
+	"github.com/exanubes/typedef/internal/app/dedup"
 	"github.com/exanubes/typedef/internal/app/lexer/json"
 	parser "github.com/exanubes/typedef/internal/app/parser/json"
 	"github.com/exanubes/typedef/internal/domain"
@@ -24,7 +25,8 @@ func TestCanonicalSerialization(test *testing.T) {
 
 	program := parser.Parse()
 
-	graph := Generate(program)
+	engine := New(dedup.New())
+	graph := engine.Generate(program)
 
 	if result := graph.Canonical(); result != expected {
 		test.Fatalf("Expected %s, received: %s", expected, result)
@@ -44,7 +46,8 @@ func TestGraphTypeNodes(test *testing.T) {
 	parser := parser.New(lexer)
 
 	program := parser.Parse()
-	graph := Generate(program)
+	engine := New(dedup.New())
+	graph := engine.Generate(program)
 	testcases := []struct {
 		property     string
 		expectedType string
@@ -75,7 +78,8 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 	parser := parser.New(lexer)
 
 	program := parser.Parse()
-	graph := Generate(program)
+	engine := New(dedup.New())
+	graph := engine.Generate(program)
 
 	testcases := []struct {
 		property     string
