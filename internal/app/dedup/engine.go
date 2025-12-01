@@ -1,6 +1,9 @@
 package dedup
 
-import "github.com/exanubes/typedef/internal/domain"
+import (
+	"github.com/exanubes/typedef/internal/app/hasher"
+	"github.com/exanubes/typedef/internal/domain"
+)
 
 type DedupEngine struct {
 	type_pool map[string]*domain.NamedType
@@ -13,7 +16,7 @@ func New() *DedupEngine {
 }
 
 func (engine *DedupEngine) Get(input *domain.ObjectType) *domain.NamedType {
-	hash := engine.hash(input.Canonical())
+	hash := hasher.Hash(input.Canonical())
 	if result, ok := engine.type_pool[hash]; ok {
 		return result
 	}
@@ -22,12 +25,7 @@ func (engine *DedupEngine) Get(input *domain.ObjectType) *domain.NamedType {
 }
 
 func (engine *DedupEngine) Add(input *domain.NamedType) {
-	hash := engine.hash(input.Identity.Canonical())
-
+	hash := hasher.Hash(input.Identity.Canonical())
+	input.Hash = hash
 	engine.type_pool[hash] = input
-}
-
-func (engine *DedupEngine) hash(value string) string {
-	// TODO: hashing algorithm
-	return value
 }
