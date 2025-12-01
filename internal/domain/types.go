@@ -82,16 +82,14 @@ func (t DateType) Canonical() string { return "" }
 
 type NamedType struct {
 	Namespace string
-	Identity  Type
+	Identity  *ObjectType
 	Hash      string
 }
 
-func (t NamedType) Compare(input NamedType) bool {
-	return true
+func (t NamedType) Name() string { return "named" }
+func (t NamedType) Canonical() string {
+	return fmt.Sprintf("named(%s#%s)", t.Namespace, t.Hash[:8])
 }
-
-func (t NamedType) Name() string      { return "named" }
-func (t NamedType) Canonical() string { return "" }
 
 type UnionType struct {
 	OneOf []Type

@@ -33,11 +33,12 @@ func (graph *Graph) Generate(tree *ast.Program) *domain.ObjectType {
 func (graph *Graph) parse_object(node *ast.ObjectNode) *domain.ObjectType {
 	result := domain.ObjectType{Fields: make(map[string]domain.Type)}
 	for _, pair := range node.Pairs {
-		result.Fields[pair.Key.Value] = graph.parse_value(pair.Value)
+		result.Fields[pair.Key.Value] = graph.parse_value(pair.Key.Value, pair.Value)
 	}
 	return &result
 }
-func (graph *Graph) parse_value(node ast.Node) domain.Type {
+
+func (graph *Graph) parse_value(property string, node ast.Node) domain.Type {
 	var result domain.Type
 	switch node := node.(type) {
 	case *ast.StringNode:
@@ -59,7 +60,7 @@ func (graph *Graph) parse_value(node ast.Node) domain.Type {
 			return named_type
 		}
 
-		named_type = &domain.NamedType{Identity: object_type}
+		named_type = &domain.NamedType{Identity: object_type, Namespace: property}
 		graph.type_pool.Add(named_type)
 
 		return named_type
@@ -70,7 +71,7 @@ func (graph *Graph) parse_value(node ast.Node) domain.Type {
 		}
 
 		for _, element := range node.Elements {
-			value := graph.parse_value(element)
+			value := graph.parse_value(property, element)
 			types_map[value.Name()] = value
 		}
 

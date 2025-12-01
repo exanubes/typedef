@@ -9,6 +9,32 @@ import (
 	"github.com/exanubes/typedef/internal/domain"
 )
 
+func TestNamedTypes(test *testing.T) {
+	input := `
+	{
+		"user": {
+	"id": 1,
+	"name": "John"
+	},
+	"author": {
+	"id": 2,
+	"name": "Tom"
+	}
+	}`
+
+	expected := "object{author:named(user#b7c1f9c4),user:named(user#b7c1f9c4)}"
+	lexer := json.New(input)
+	parser := parser.New(lexer)
+
+	program := parser.Parse()
+
+	engine := New(dedup.New())
+	graph := engine.Generate(program)
+
+	if result := graph.Canonical(); result != expected {
+		test.Fatalf("Expected %s, received: %s", expected, result)
+	}
+}
 func TestCanonicalSerialization(test *testing.T) {
 	input := `
 	{
@@ -110,15 +136,14 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 	}
 
 	union := union_array.Element.(domain.UnionType)
-
 	if union.OneOf[0].Name() != (domain.IntType{}).Name() {
-		test.Fatalf("Wrong union[0] type expected %s, received %s", (domain.IntType{}).Name(), union_array.Element.Name())
+		test.Fatalf("Wrong union[0] type expected %s, received %s", (domain.IntType{}).Name(), union.OneOf[0].Name())
 	}
 	if union.OneOf[1].Name() != (domain.StringType{}).Name() {
-		test.Fatalf("Wrong union[1] type expected %s, received %s", (domain.StringType{}).Name(), union_array.Element.Name())
+		test.Fatalf("Wrong union[1] type expected %s, received %s", (domain.StringType{}).Name(), union.OneOf[1].Name())
 	}
 	if union.OneOf[2].Name() != (domain.BooleanType{}).Name() {
-		test.Fatalf("Wrong union[2] type expected %s, received %s", (domain.BooleanType{}).Name(), union_array.Element.Name())
+		test.Fatalf("Wrong union[2] type expected %s, received %s", (domain.BooleanType{}).Name(), union.OneOf[2].Name())
 	}
 
 	numbers_array := graph.Fields["numbers"].(domain.ArrayType)
@@ -130,10 +155,10 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 	union = numbers_array.Element.(domain.UnionType)
 
 	if union.OneOf[0].Name() != (domain.IntType{}).Name() {
-		test.Fatalf("Wrong union[0] type expected %s, received %s", (domain.IntType{}).Name(), numbers_array.Element.Name())
+		test.Fatalf("Wrong union[0] type expected %s, received %s", (domain.IntType{}).Name(), union.OneOf[0].Name())
 	}
 	if union.OneOf[1].Name() != (domain.FloatType{}).Name() {
-		test.Fatalf("Wrong union[1] type expected %s, received %s", (domain.FloatType{}).Name(), numbers_array.Element.Name())
+		test.Fatalf("Wrong union[1] type expected %s, received %s", (domain.FloatType{}).Name(), union.OneOf[1].Name())
 	}
 
 	empty_array := graph.Fields["empty"].(domain.ArrayType)
