@@ -1,7 +1,6 @@
 package golang
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/exanubes/typedef/internal/app/dedup"
@@ -41,13 +40,14 @@ func TestNamedTypes(test *testing.T) {
 }
 
 type Root struct {
-  User User
-  Author User
   ID int
+  Author User
   Title string
+  User User
 }`
+
 	if result != expected {
-		test.Fatalf("Expected %s, received %s", expected, result)
+		test.Fatalf("Expected \n%s, received \n%s", expected, result)
 	}
 
 }

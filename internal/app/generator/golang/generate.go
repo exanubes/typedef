@@ -20,17 +20,17 @@ func (generator *GolangCodegen) Generate(tree *ast.Program) string {
 	typedef := generator.transformer.Transform(tree)
 	var builder strings.Builder
 	type_map := map[string]string{}
-	// TODO: deterministic ordering of properties
+
 	for index, node := range typedef {
 		type_map[node.ID] = capitalize(node.Name)
 		builder.WriteString(fmt.Sprintf("type %s struct {", capitalize(node.Name)))
 		builder.WriteRune('\n')
 		for _, field := range node.Fields {
-			builder.WriteString(fmt.Sprintf("  %s %s", capitalize(field.Name), generator.parse_type(field.TypeID, type_map)))
+			builder.WriteString(fmt.Sprintf("  %s %s", capitalize(field.Name), parse_type(field.TypeID, type_map)))
 			builder.WriteRune('\n')
 		}
 		builder.WriteString("}")
-		if index != len(typedef) {
+		if index != len(typedef)-1 {
 			builder.WriteRune('\n')
 			builder.WriteRune('\n')
 		}
@@ -39,7 +39,7 @@ func (generator *GolangCodegen) Generate(tree *ast.Program) string {
 	return builder.String()
 }
 
-func (generator *GolangCodegen) parse_type(value string, types map[string]string) string {
+func parse_type(value string, types map[string]string) string {
 	if strings.HasPrefix(value, "named") {
 		return types[value]
 	}

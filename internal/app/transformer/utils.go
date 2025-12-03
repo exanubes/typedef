@@ -1,6 +1,11 @@
 package transformer
 
-import "github.com/exanubes/typedef/internal/domain"
+import (
+	"slices"
+	"strings"
+
+	"github.com/exanubes/typedef/internal/domain"
+)
 
 func objectToTypeDef(id, name string, properties map[string]domain.Type) TypeDef {
 	fields := make([]FieldDef, len(properties))
@@ -14,6 +19,25 @@ func objectToTypeDef(id, name string, properties map[string]domain.Type) TypeDef
 
 		index += 1
 	}
+	slices.SortStableFunc(fields, func(a, b FieldDef) int {
+		if strings.ToLower(a.Name) == "id" {
+			return -1
+		}
+
+		if strings.ToLower(b.Name) == "id" {
+			return 1
+		}
+
+		if a.Name > b.Name {
+			return 1
+		}
+
+		if a.Name < b.Name {
+			return -1
+		}
+
+		return 0
+	})
 	return TypeDef{
 		ID:     id,
 		Name:   name,
