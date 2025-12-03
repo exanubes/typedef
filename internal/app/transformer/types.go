@@ -1,5 +1,7 @@
 package transformer
 
+import "github.com/exanubes/typedef/internal/app/ast"
+
 type TypeDef struct {
 	ID     string
 	Kind   TypeKind
@@ -18,3 +20,7 @@ type TypeKind string
 const (
 	KindObject = "OBJECT"
 )
+
+type Transformer interface {
+	Transform(tree *ast.Program) []TypeDef
+}

@@ -1,4 +1,4 @@
-package transformer
+package golang
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/exanubes/typedef/internal/app/graph"
 	"github.com/exanubes/typedef/internal/app/lexer/json"
 	parser "github.com/exanubes/typedef/internal/app/parser/json"
+	"github.com/exanubes/typedef/internal/app/transformer"
 )
 
 func TestNamedTypes(test *testing.T) {
@@ -31,18 +32,22 @@ func TestNamedTypes(test *testing.T) {
 	program := parser.Parse()
 
 	graph := graph.New(dedup.New())
-	transformer := New(graph)
-	result := transformer.Transform(program)
+	transformer := transformer.New(graph)
+	codegen := New(transformer)
+	result := codegen.Generate(program)
+	expected := `type User struct {
+  ID int
+  Name string
+}
 
-	if len(result) != 2 {
-		test.Fatalf("Expected 2 type definitions, received %d", len(result))
+type Root struct {
+  User User
+  Author User
+  ID int
+  Title string
+}`
+	if result != expected {
+		test.Fatalf("Expected %s, received %s", expected, result)
 	}
 
-	if result[0].ID != "named(user#b7c1f9c4)" {
-		test.Fatalf("Expected result[0].ID to be \"name(user#b7c1f9c4)\", received: %s", result[0].ID)
-	}
-
-	if result[1].ID != "root" {
-		test.Fatalf("Expected result[1].ID to be \"root\", received: %s", result[1].ID)
-	}
 }

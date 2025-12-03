@@ -12,7 +12,9 @@ import (
 func TestNamedTypes(test *testing.T) {
 	input := `
 	{
-		"user": {
+	"id": 1,
+	"title": "Harry Potter",
+	"user": {
 	"id": 1,
 	"name": "John"
 	},

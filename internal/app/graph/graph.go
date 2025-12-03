@@ -25,7 +25,7 @@ func (graph *Graph) Generate(tree *ast.Program) *domain.ObjectType {
 	case *ast.ObjectNode:
 		return graph.parse_object(node)
 	default:
-		log.Fatalf("@@ Invalid node %+v", node)
+		log.Fatalf("Invalid node %+v", node)
 	}
 	return nil
 }
@@ -72,7 +72,7 @@ func (graph *Graph) parse_value(property string, node ast.Node) domain.Type {
 
 		for _, element := range node.Elements {
 			value := graph.parse_value(property, element)
-			types_map[value.Name()] = value
+			types_map[value.Canonical()] = value
 		}
 
 		types := maps.Values(types_map)
