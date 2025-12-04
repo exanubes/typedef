@@ -1,23 +1,20 @@
 package transformer
 
 import (
-	"github.com/exanubes/typedef/internal/app/ast"
-	"github.com/exanubes/typedef/internal/app/graph"
 	"github.com/exanubes/typedef/internal/domain"
 	"golang.org/x/exp/maps"
 )
 
 type IntermediateRepresentationTransformer struct {
-	graph graph.TypeGraph
 }
 
-func New(graph graph.TypeGraph) *IntermediateRepresentationTransformer {
-	return &IntermediateRepresentationTransformer{graph: graph}
+var _ Transformer = (*IntermediateRepresentationTransformer)(nil)
+
+func New() *IntermediateRepresentationTransformer {
+	return &IntermediateRepresentationTransformer{}
 }
 
-func (transformer *IntermediateRepresentationTransformer) Transform(tree *ast.Program) []TypeDef {
-
-	root := transformer.graph.Generate(tree)
+func (transformer *IntermediateRepresentationTransformer) Transform(root *domain.ObjectType) []TypeDef {
 
 	visited := map[string]bool{}
 	typedefs := map[string]TypeDef{}

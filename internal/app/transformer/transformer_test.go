@@ -1,7 +1,6 @@
 package transformer
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/exanubes/typedef/internal/app/dedup"
@@ -28,11 +27,9 @@ func TestNamedTypes(test *testing.T) {
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
-	program := parser.Parse()
-
 	graph := graph.New(dedup.New())
-	transformer := New(graph)
-	result := transformer.Transform(program)
+	transformer := New()
+	result := transformer.Transform(graph.Generate(parser.Parse()))
 
 	if len(result) != 2 {
 		test.Fatalf("Expected 2 type definitions, received %d", len(result))

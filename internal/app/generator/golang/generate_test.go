@@ -28,12 +28,10 @@ func TestNamedTypes(test *testing.T) {
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
-	program := parser.Parse()
-
 	graph := graph.New(dedup.New())
-	transformer := transformer.New(graph)
-	codegen := New(transformer)
-	result := codegen.Generate(program)
+	transformer := transformer.New()
+	codegen := New()
+	result := codegen.Generate(transformer.Transform(graph.Generate(parser.Parse())))
 	expected := `type User struct {
   ID int
   Name string

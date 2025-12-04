@@ -1,7 +1,9 @@
 package generator
 
-import "github.com/exanubes/typedef/internal/app/ast"
+import (
+	"github.com/exanubes/typedef/internal/app/transformer"
+)
 
 type CodeGenerator interface {
-	Generate(tree *ast.Program) string
+	Generate([]transformer.TypeDef) string
 }

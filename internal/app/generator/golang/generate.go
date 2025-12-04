@@ -4,20 +4,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/exanubes/typedef/internal/app/ast"
 	"github.com/exanubes/typedef/internal/app/transformer"
 )
 
-type GolangCodegen struct {
-	transformer transformer.Transformer
+type GolangCodegen struct{}
+
+func New() *GolangCodegen {
+	return &GolangCodegen{}
 }
 
-func New(transformer transformer.Transformer) *GolangCodegen {
-	return &GolangCodegen{transformer: transformer}
-}
-
-func (generator *GolangCodegen) Generate(tree *ast.Program) string {
-	typedef := generator.transformer.Transform(tree)
+func (generator *GolangCodegen) Generate(typedef []transformer.TypeDef) string {
 	var builder strings.Builder
 	type_map := map[string]string{}
 

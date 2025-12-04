@@ -1,6 +1,8 @@
 package transformer
 
-import "github.com/exanubes/typedef/internal/app/ast"
+import (
+	"github.com/exanubes/typedef/internal/domain"
+)
 
 type TypeDef struct {
 	ID     string
@@ -22,5 +24,5 @@ const (
 )
 
 type Transformer interface {
-	Transform(tree *ast.Program) []TypeDef
+	Transform(tree *domain.ObjectType) []TypeDef
 }

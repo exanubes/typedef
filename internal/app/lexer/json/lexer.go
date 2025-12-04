@@ -13,6 +13,7 @@ type Lexer struct {
 	character     byte
 }
 
+// TODO: remove input from constructor
 func New(input string) *Lexer {
 	lexer := &Lexer{
 		input: input,
