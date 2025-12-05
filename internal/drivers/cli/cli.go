@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/exanubes/typedef/internal/app/configurator"
-	"github.com/exanubes/typedef/internal/services"
+	"github.com/exanubes/typedef/internal/domain"
 )
 
 func Start(ctx context.Context, args []string) error {
@@ -29,9 +29,9 @@ func Start(ctx context.Context, args []string) error {
 	// if *format_flag == "" {
 	// 	return fmt.Errorf("--format flag is required")
 	// }
-	codegen_service := configurator.New()
+	codegen_service, output_target := configurator.New()
 
-	code, err := codegen_service.Execute(services.CodegenOptions{
+	code, err := codegen_service.Execute(domain.CodegenOptions{
 		Input:      input,
 		InputType:  "json",
 		OutputType: "golang",
@@ -41,8 +41,9 @@ func Start(ctx context.Context, args []string) error {
 		return err
 	}
 
-	fmt.Printf("CODE:\n%s", code)
-	return nil
+	err = output_target.Send(code)
+
+	return err
 }
 
 func parse_input(input string) (string, error) {

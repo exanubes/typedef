@@ -8,6 +8,7 @@ import (
 	"github.com/exanubes/typedef/internal/app/lexer"
 	"github.com/exanubes/typedef/internal/app/parser"
 	"github.com/exanubes/typedef/internal/app/transformer"
+	"github.com/exanubes/typedef/internal/domain"
 )
 
 type CodegenService struct {
@@ -16,12 +17,6 @@ type CodegenService struct {
 	graph       graph.TypeGraph
 	transformer transformer.Transformer
 	codegen     generator.CodeGenerator
-}
-
-type CodegenOptions struct {
-	InputType  string
-	OutputType string
-	Input      string
 }
 
 func NewCodegenService(
@@ -40,7 +35,7 @@ func NewCodegenService(
 	}
 }
 
-func (service *CodegenService) Execute(options CodegenOptions) (string, error) {
+func (service *CodegenService) Execute(options domain.CodegenOptions) (string, error) {
 	lexer := service.lexer.Create(options.InputType, options.Input)
 	if lexer == nil {
 		return "", fmt.Errorf("%s format is not supported", options.InputType)

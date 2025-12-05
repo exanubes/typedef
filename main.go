@@ -15,7 +15,7 @@ func main() {
 	defer stop()
 	err := cli.Start(ctx, args)
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Print(err.Error())
 		os.Exit(1)
 
 	}
