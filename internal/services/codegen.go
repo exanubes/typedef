@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/exanubes/typedef/internal/app/generator"
+	"github.com/exanubes/typedef/internal/app/generator/golang"
 	"github.com/exanubes/typedef/internal/app/graph"
 	"github.com/exanubes/typedef/internal/app/lexer"
 	"github.com/exanubes/typedef/internal/app/parser"
@@ -46,6 +47,6 @@ func (service *CodegenService) Execute(options domain.CodegenOptions) (string, e
 	}
 	ast := parser.Parse()
 	graph_root := service.graph.Generate(ast)
-	intermediate_representation := service.transformer.Transform(graph_root)
-	return service.codegen.Generate(intermediate_representation), nil
+	v2 := golang.NewV2()
+	return v2.Generate("Root", graph_root), nil
 }
