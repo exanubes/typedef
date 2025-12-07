@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/exanubes/typedef/internal/app/dedup"
@@ -22,7 +23,8 @@ func TestNamedTypes(test *testing.T) {
 	"author": {
 	"id": 2,
 	"name": "Tom"
-	}
+	},
+	"arr": [1, "2", true]
 	}`
 
 	lexer := json.New(input)
@@ -31,6 +33,7 @@ func TestNamedTypes(test *testing.T) {
 	graph := graph.New(dedup.New())
 	transformer := transformer.New()
 	codegen := New()
+	fmt.Printf("IR: %+v", transformer.Transform(graph.Generate(parser.Parse())))
 	result := codegen.Generate(transformer.Transform(graph.Generate(parser.Parse())))
 	expected := `type User struct {
   ID int

@@ -44,6 +44,8 @@ func (transformer *IntermediateRepresentationTransformer) dfs(node domain.Type, 
 		defs[id] = objectToTypeDef(node.Canonical(), node.Namespace, node.Identity.Fields)
 	case domain.ArrayType:
 		transformer.dfs(node.Element, visited, defs)
+		defs[id] = arrayToTypeDef(node)
+
 	case domain.UnionType:
 		for _, field := range node.OneOf {
 			transformer.dfs(field, visited, defs)

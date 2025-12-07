@@ -41,15 +41,18 @@ func objectToTypeDef(id, name string, properties map[string]domain.Type) TypeDef
 	return TypeDef{
 		ID:     id,
 		Name:   name,
+		Kind:   KindObject,
 		Fields: fields,
 	}
 }
+
+var letters = []string{"A", "B", "C", "D", "E", "F"}
 
 func unionToTypeDef(field domain.UnionType) TypeDef {
 	fields := make([]FieldDef, len(field.OneOf))
 	for index, field := range field.OneOf {
 		fields[index] = FieldDef{
-			Name:       "",
+			Name:       letters[index],
 			ParsedName: "",
 			TypeID:     field.Canonical(),
 		}
@@ -58,5 +61,15 @@ func unionToTypeDef(field domain.UnionType) TypeDef {
 		ID:     field.Canonical(),
 		Name:   field.Canonical(),
 		Fields: fields,
+		Kind:   KindUnion,
+	}
+}
+
+func arrayToTypeDef(field domain.ArrayType) TypeDef {
+	return TypeDef{
+		ID:          field.Canonical(),
+		Name:        field.Canonical(),
+		Kind:        KindArray,
+		ElementType: field.Element.Canonical(),
 	}
 }

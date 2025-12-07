@@ -15,14 +15,25 @@ func New() *GolangCodegen {
 
 func (generator *GolangCodegen) Generate(typedef []transformer.TypeDef) string {
 	var builder strings.Builder
-	type_map := map[string]string{}
+	type_map := map[string]transformer.TypeDef{}
+	for _, node := range typedef {
+		type_map[node.ID] = node
+	}
 
+	fmt.Printf("INPUT: %+v\n\n", typedef)
 	for index, node := range typedef {
-		type_map[node.ID] = capitalize(node.Name)
+		if node.Kind == transformer.KindArray {
+			continue
+		}
+
 		builder.WriteString(fmt.Sprintf("type %s struct {", capitalize(node.Name)))
 		builder.WriteRune('\n')
 		for _, field := range node.Fields {
-			builder.WriteString(fmt.Sprintf("  %s %s", capitalize(field.Name), parse_type(field.TypeID, type_map)))
+			builder.WriteString(
+				fmt.Sprintf("  %s %s",
+					capitalize(field.Name),
+					parse_type(field.TypeID, type_map),
+				))
 			builder.WriteRune('\n')
 		}
 		builder.WriteString("}")
@@ -35,9 +46,13 @@ func (generator *GolangCodegen) Generate(typedef []transformer.TypeDef) string {
 	return builder.String()
 }
 
-func parse_type(value string, types map[string]string) string {
+func parse_type(value string, types map[string]transformer.TypeDef) string {
 	if strings.HasPrefix(value, "named") {
-		return types[value]
+		return capitalize(types[value].Name)
+	}
+
+	if strings.HasPrefix(value, "array") {
+		return fmt.Sprintf("[]%s", parse_type(types[value].ElementType, types))
 	}
 
 	return value

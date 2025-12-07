@@ -5,10 +5,11 @@ import (
 )
 
 type TypeDef struct {
-	ID     string
-	Kind   TypeKind
-	Name   string
-	Fields []FieldDef
+	ID          string
+	Kind        TypeKind
+	Name        string
+	Fields      []FieldDef
+	ElementType string
 }
 
 type FieldDef struct {
@@ -21,6 +22,8 @@ type TypeKind string
 
 const (
 	KindObject = "OBJECT"
+	KindArray  = "ARRAY"
+	KindUnion  = "UNION"
 )
 
 type Transformer interface {
