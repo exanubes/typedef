@@ -4,35 +4,30 @@ import (
 	"fmt"
 
 	"github.com/exanubes/typedef/internal/app/generator"
-	"github.com/exanubes/typedef/internal/app/generator/golang"
 	"github.com/exanubes/typedef/internal/app/graph"
 	"github.com/exanubes/typedef/internal/app/lexer"
 	"github.com/exanubes/typedef/internal/app/parser"
-	"github.com/exanubes/typedef/internal/app/transformer"
 	"github.com/exanubes/typedef/internal/domain"
 )
 
 type CodegenService struct {
-	lexer       lexer.Factory
-	parser      parser.Factory
-	graph       graph.TypeGraph
-	transformer transformer.Transformer
-	codegen     generator.CodeGenerator
+	lexer   lexer.Factory
+	parser  parser.Factory
+	graph   graph.TypeGraph
+	codegen generator.CodeGenerator
 }
 
 func NewCodegenService(
 	lexer lexer.Factory,
 	parser parser.Factory,
 	graph graph.TypeGraph,
-	transformer transformer.Transformer,
 	codegen generator.CodeGenerator,
 ) *CodegenService {
 	return &CodegenService{
-		lexer:       lexer,
-		parser:      parser,
-		graph:       graph,
-		transformer: transformer,
-		codegen:     codegen,
+		lexer:   lexer,
+		parser:  parser,
+		graph:   graph,
+		codegen: codegen,
 	}
 }
 
@@ -47,6 +42,5 @@ func (service *CodegenService) Execute(options domain.CodegenOptions) (string, e
 	}
 	ast := parser.Parse()
 	graph_root := service.graph.Generate(ast)
-	v2 := golang.NewV2()
-	return v2.Generate("Root", graph_root), nil
+	return service.codegen.Generate(graph_root), nil
 }

@@ -1,9 +1,9 @@
 package generator
 
 import (
-	"github.com/exanubes/typedef/internal/app/transformer"
+	"github.com/exanubes/typedef/internal/domain"
 )
 
 type CodeGenerator interface {
-	Generate([]transformer.TypeDef) string
+	Generate(domain.Type) string
 }
