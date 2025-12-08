@@ -7,3 +7,7 @@ import (
 type CodeGenerator interface {
 	Generate(domain.Type) string
 }
+
+type Factory interface {
+	Create(Format) CodeGenerator
+}

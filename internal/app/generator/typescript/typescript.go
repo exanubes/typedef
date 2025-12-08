@@ -11,7 +11,7 @@ import (
 
 type TypescriptCodegen struct{}
 
-func NewTypescriptCodegen() *TypescriptCodegen {
+func New() *TypescriptCodegen {
 	return &TypescriptCodegen{}
 }
 

@@ -8,6 +8,7 @@ type CodegenOptions struct {
 	InputType  string
 	OutputType string
 	Input      string
+	Format     int // TODO: is format part of domain?
 }
 
 type OutputTarget interface {

@@ -31,7 +31,7 @@ func TestNamedTypes(test *testing.T) {
 	parser := parser.New(lexer)
 
 	graph := graph.New(dedup.New())
-	codegen := NewTypescriptCodegen()
+	codegen := New()
 	result := codegen.Generate(graph.Generate(parser.Parse()))
 	expected := `type User = {
   id: number;

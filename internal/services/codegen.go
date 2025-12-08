@@ -14,14 +14,14 @@ type CodegenService struct {
 	lexer   lexer.Factory
 	parser  parser.Factory
 	graph   graph.TypeGraph
-	codegen generator.CodeGenerator
+	codegen generator.Factory
 }
 
 func NewCodegenService(
 	lexer lexer.Factory,
 	parser parser.Factory,
 	graph graph.TypeGraph,
-	codegen generator.CodeGenerator,
+	codegen generator.Factory,
 ) *CodegenService {
 	return &CodegenService{
 		lexer:   lexer,
@@ -42,5 +42,7 @@ func (service *CodegenService) Execute(options domain.CodegenOptions) (string, e
 	}
 	ast := parser.Parse()
 	graph_root := service.graph.Generate(ast)
-	return service.codegen.Generate(graph_root), nil
+	codegen := service.codegen.Create(generator.Format(options.Format))
+
+	return codegen.Generate(graph_root), nil
 }
