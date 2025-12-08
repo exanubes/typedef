@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/exanubes/typedef/internal/domain"
+	"github.com/exanubes/typedef/internal/utils"
 )
 
 type GolangCodegen struct{}
@@ -39,7 +40,7 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 		return code.String()
 
 	case *domain.NamedType:
-		struct_name := capitalize(node.Namespace)
+		struct_name := utils.Capitalize(node.Namespace)
 
 		builder := new_struct_builder()
 		builder.with_name(struct_name)
@@ -56,14 +57,14 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 		return struct_name
 
 	case *domain.UnionType:
-		struct_name := fmt.Sprintf("UnionType_%s", random_string(10))
+		struct_name := fmt.Sprintf("UnionType_%s", utils.RandomString(10))
 
 		builder := new_struct_builder()
 		builder.with_name(struct_name)
 
 		for index, typ := range node.OneOf {
 			union_type := generator.dfs(typ, visited, code)
-			builder.with_field(string(alpha[index]), union_type)
+			builder.with_field(utils.Letter(index), union_type)
 		}
 
 		visited[id] = struct_name
