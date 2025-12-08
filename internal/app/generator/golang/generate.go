@@ -78,6 +78,21 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 		type_def := fmt.Sprintf("[]%s", field_type)
 		visited[id] = type_def
 		return type_def
+	case *domain.FloatType, domain.FloatType:
+		visited[id] = "float64"
+		return "float64"
+	case *domain.BooleanType, domain.BooleanType:
+		visited[id] = "bool"
+		return "bool"
+	case *domain.NullType, domain.NullType:
+		visited[id] = "nil"
+		return "nil"
+	case *domain.UnknownType, domain.UnknownType:
+		visited[id] = "any"
+		return "any"
+	case *domain.DateType, domain.DateType:
+		visited[id] = "time.Time"
+		return "time.Time"
 	default:
 		visited[id] = node.Canonical()
 		return node.Canonical()

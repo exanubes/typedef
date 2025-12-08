@@ -10,21 +10,22 @@ import (
 )
 
 func TestNamedTypes(test *testing.T) {
-	input := `
-	{
+	input := `{
 	"id": 1,
 	"title": "Harry Potter",
-	"user": {
-	"id": 1,
+	"user":{"id": 1,
 	"name": "John"
 	},
 	"author": {
 	"id": 2,
 	"name": "Tom"
 	},
-	"mixed": [1, "two", true, {"id": 69420, "name": "Jane"}],
-	"unary": [6,9,4,2,0]
-	}`
+	"numbers": [1,2,3],
+	"mixed": [1, "2", false, {"id": 3, "name": "Simon"}],
+	"float": 69.420,
+	"cool": true
+	}
+	`
 
 	lexer := json.New(input)
 	parser := parser.New(lexer)
@@ -40,9 +41,11 @@ func TestNamedTypes(test *testing.T) {
 type Root = {
   id: number;
   author: User;
+  cool: boolean;
+  float: number;
   mixed: (User | boolean | number | string)[];
+  numbers: number[];
   title: string;
-  unary: number[];
   user: User;
 }
 `

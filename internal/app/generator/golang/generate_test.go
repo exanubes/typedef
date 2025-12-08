@@ -10,19 +10,21 @@ import (
 )
 
 func TestNamedTypes(test *testing.T) {
-	input := `
-	{
+	input := `{
 	"id": 1,
 	"title": "Harry Potter",
-	"user": {
-	"id": 1,
+	"user":{"id": 1,
 	"name": "John"
 	},
 	"author": {
 	"id": 2,
 	"name": "Tom"
+	},
+	"numbers": [1,2,3],
+	"float": 69.420,
+	"cool": true
 	}
-	}`
+	`
 
 	lexer := json.New(input)
 	parser := parser.New(lexer)
@@ -30,6 +32,7 @@ func TestNamedTypes(test *testing.T) {
 	graph := graph.New(dedup.New())
 	codegen := New()
 	result := codegen.Generate(graph.Generate(parser.Parse()))
+	// TODO: mock utils.RandomString() to be able to test union types
 	expected := `type User struct {
   ID int
   Name string
@@ -38,6 +41,9 @@ func TestNamedTypes(test *testing.T) {
 type Root struct {
   ID int
   Author User
+  Cool bool
+  Float float64
+  Numbers []int
   Title string
   User User
 }

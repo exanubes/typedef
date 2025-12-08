@@ -90,6 +90,15 @@ func (generator *TypescriptCodegen) dfs(node domain.Type, visited map[string]str
 	case *domain.IntType, *domain.FloatType, domain.IntType, domain.FloatType:
 		visited[id] = "number"
 		return "number"
+	case *domain.NullType, domain.NullType:
+		visited[id] = "null"
+		return "null"
+	case *domain.UnknownType, domain.UnknownType:
+		visited[id] = "unknown"
+		return "unknown"
+	case *domain.DateType, domain.DateType:
+		visited[id] = "Date"
+		return "Date"
 	default:
 		visited[id] = node.Canonical()
 		return node.Canonical()
