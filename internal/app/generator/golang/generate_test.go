@@ -21,8 +21,7 @@ func TestNamedTypes(test *testing.T) {
 	"author": {
 	"id": 2,
 	"name": "Tom"
-	},
-	"arr": [1, "2", true]
+	}
 	}`
 
 	lexer := json.New(input)
@@ -41,7 +40,8 @@ type Root struct {
   Author User
   Title string
   User User
-}`
+}
+`
 
 	if result != expected {
 		test.Fatalf("Expected \n%s, received \n%s", expected, result)

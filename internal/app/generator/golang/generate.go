@@ -27,37 +27,51 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 	}
 
 	switch node := node.(type) {
-	// TODO: deterministic ordering of struct properties
-	// TODO: union types
 	case *domain.ObjectType:
-		var codegen strings.Builder
-		codegen.WriteString("type Root struct {")
-		codegen.WriteRune('\n')
+		builder := new_struct_builder()
+		builder.with_name("Root")
 		for key, field := range node.Fields {
 			field_type := generator.dfs(field, visited, code)
-			codegen.WriteString(indent + fmt.Sprintf("%s %s", capitalize(key), field_type))
-			codegen.WriteRune('\n')
+			builder.with_field(key, field_type)
 		}
-		codegen.WriteString("}")
-		codegen.WriteRune('\n')
-		code.WriteString(codegen.String())
+		code.WriteString(builder.build())
+
 		return code.String()
+
 	case *domain.NamedType:
-		var codegen strings.Builder
 		struct_name := capitalize(node.Namespace)
-		codegen.WriteString(fmt.Sprintf("type %s struct {", struct_name))
-		codegen.WriteRune('\n')
+
+		builder := new_struct_builder()
+		builder.with_name(struct_name)
+
 		for key, field := range node.Identity.Fields {
 			field_type := generator.dfs(field, visited, code)
-			codegen.WriteString(indent + fmt.Sprintf("%s %s", capitalize(key), field_type))
-			codegen.WriteRune('\n')
+			builder.with_field(key, field_type)
 		}
-		codegen.WriteString("}")
-		codegen.WriteRune('\n')
-		codegen.WriteRune('\n')
-		code.WriteString(codegen.String())
+
+		code.WriteString(builder.build())
+		code.WriteRune('\n')
 		visited[id] = struct_name
+
 		return struct_name
+
+	case domain.UnionType:
+		struct_name := fmt.Sprintf("UnionType_%s", random_string(10))
+
+		builder := new_struct_builder()
+		builder.with_name(struct_name)
+
+		for index, typ := range node.OneOf {
+			union_type := generator.dfs(typ, visited, code)
+			builder.with_field(string(alpha[index]), union_type)
+		}
+
+		visited[id] = struct_name
+		code.WriteString(builder.build())
+		code.WriteRune('\n')
+
+		return struct_name
+
 	// FIX: Inconsistency with pointer/value receivers
 	case domain.ArrayType:
 		field_type := generator.dfs(node.Element, visited, code)
@@ -68,4 +82,5 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 		visited[id] = node.Canonical()
 		return node.Canonical()
 	}
+
 }

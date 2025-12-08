@@ -1,6 +1,10 @@
 package golang
 
-import "strings"
+import (
+	"crypto/rand"
+	"slices"
+	"strings"
+)
 
 func capitalize(value string) string {
 	if strings.ToLower(value) == "id" {
@@ -8,4 +12,41 @@ func capitalize(value string) string {
 	}
 
 	return strings.ToUpper(value[:1]) + value[1:]
+}
+
+const alphanumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345667890-"
+const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func random_string(length int) string {
+
+	b := make([]byte, length)
+	rand.Read(b)
+	for i := range b {
+		b[i] = alphanumeric[int(b[i])%len(alphanumeric)]
+	}
+	return string(b)
+}
+
+func sort_fields(fields []string) []string {
+	slices.SortStableFunc(fields, func(a, b string) int {
+		if strings.ToLower(a) == "id" {
+			return -1
+		}
+
+		if strings.ToLower(b) == "id" {
+			return 1
+		}
+
+		if strings.ToLower(a) > strings.ToLower(b) {
+			return 1
+		}
+
+		if strings.ToLower(a) < strings.ToLower(b) {
+			return -1
+		}
+
+		return 0
+	})
+
+	return fields
 }
