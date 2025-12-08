@@ -67,7 +67,7 @@ func (graph *Graph) parse_value(property string, node ast.Node) domain.Type {
 	case *ast.ArrayNode:
 		types_map := map[string]domain.Type{}
 		if len(node.Elements) == 0 {
-			return domain.ArrayType{Element: domain.UnknownType{}}
+			return &domain.ArrayType{Element: domain.UnknownType{}}
 		}
 
 		for _, element := range node.Elements {
@@ -77,9 +77,9 @@ func (graph *Graph) parse_value(property string, node ast.Node) domain.Type {
 
 		types := maps.Values(types_map)
 		if len(types) > 1 {
-			result = domain.ArrayType{Element: domain.UnionType{OneOf: types}}
+			result = &domain.ArrayType{Element: &domain.UnionType{OneOf: types}}
 		} else {
-			result = domain.ArrayType{Element: types[0]}
+			result = &domain.ArrayType{Element: types[0]}
 		}
 	}
 	return result

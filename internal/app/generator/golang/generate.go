@@ -55,7 +55,7 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 
 		return struct_name
 
-	case domain.UnionType:
+	case *domain.UnionType:
 		struct_name := fmt.Sprintf("UnionType_%s", random_string(10))
 
 		builder := new_struct_builder()
@@ -72,8 +72,7 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 
 		return struct_name
 
-	// FIX: Inconsistency with pointer/value receivers
-	case domain.ArrayType:
+	case *domain.ArrayType:
 		field_type := generator.dfs(node.Element, visited, code)
 		type_def := fmt.Sprintf("[]%s", field_type)
 		visited[id] = type_def
