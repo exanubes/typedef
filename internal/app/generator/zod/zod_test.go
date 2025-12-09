@@ -1,12 +1,14 @@
 package zod
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/exanubes/typedef/internal/app/dedup"
 	"github.com/exanubes/typedef/internal/app/graph"
 	"github.com/exanubes/typedef/internal/app/lexer/json"
 	parser "github.com/exanubes/typedef/internal/app/parser/json"
+	"github.com/exanubes/typedef/internal/utils"
 )
 
 func TestNamedTypes(test *testing.T) {
@@ -53,9 +55,9 @@ const RootSchema = z.object({
 });
 type Root = z.infer<typeof RootSchema>;
 `
-
-	if result != expected {
-		test.Fatalf("Expected \n%s, received \n%s", expected, result)
+	errors := utils.CompareLineByLine(result, expected)
+	if len(errors) != 0 {
+		test.Fatal(strings.Join(errors, "\n\n"))
 	}
 
 }
