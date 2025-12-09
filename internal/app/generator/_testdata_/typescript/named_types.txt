@@ -1,0 +1,16 @@
+type User = {
+  id: number;
+  name: string;
+}
+
+type Root = {
+  id: number;
+  author: User;
+  cool: boolean;
+  float: number;
+  mixed: (User | boolean | number | string)[];
+  numbers: number[];
+  title: string;
+  user: User;
+}
+

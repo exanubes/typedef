@@ -1,0 +1,22 @@
+type User struct {
+  ID int
+  Name string
+}
+
+type UnionType_testing struct {
+  A bool
+  B int
+  C string
+  D User
+}
+
+type Root struct {
+  ID int
+  Author User
+  Cool bool
+  Float float64
+  Mixed []UnionType_testing
+  Numbers []int
+  Title string
+  User User
+}

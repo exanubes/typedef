@@ -1,0 +1,18 @@
+/**
+ * @typedef  { Object } User
+ * @property { number } id
+ * @property { string } name
+ */
+
+/**
+ * @typedef  { Object } Root
+ * @property { number } id
+ * @property { User } author
+ * @property { boolean } cool
+ * @property { number } float
+ * @property { (User | boolean | number | string)[] } mixed
+ * @property { number[] } numbers
+ * @property { string } title
+ * @property { User } user
+ */
+

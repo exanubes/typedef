@@ -123,19 +123,19 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 		}
 	}
 
-	unary_array := graph.Fields["list"].(domain.ArrayType)
+	unary_array := graph.Fields["list"].(*domain.ArrayType)
 
 	if unary_array.Element.Name() != (domain.IntType{}).Name() {
 		test.Fatalf("Wrong array element type expected %s, received %s", (domain.IntType{}).Name(), unary_array.Element.Name())
 	}
 
-	union_array := graph.Fields["union"].(domain.ArrayType)
+	union_array := graph.Fields["union"].(*domain.ArrayType)
 
 	if union_array.Element.Name() != (domain.UnionType{}).Name() {
 		test.Fatalf("Wrong array element type expected %s, received %s", (domain.UnionType{}).Name(), union_array.Element.Name())
 	}
 
-	union := union_array.Element.(domain.UnionType)
+	union := union_array.Element.(*domain.UnionType)
 	if union.OneOf[0].Name() != (domain.IntType{}).Name() {
 		test.Fatalf("Wrong union[0] type expected %s, received %s", (domain.IntType{}).Name(), union.OneOf[0].Name())
 	}
@@ -146,13 +146,13 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 		test.Fatalf("Wrong union[2] type expected %s, received %s", (domain.BooleanType{}).Name(), union.OneOf[2].Name())
 	}
 
-	numbers_array := graph.Fields["numbers"].(domain.ArrayType)
+	numbers_array := graph.Fields["numbers"].(*domain.ArrayType)
 
 	if numbers_array.Element.Name() != (domain.UnionType{}).Name() {
 		test.Fatalf("Wrong array element type expected %s, received %s", (domain.UnionType{}).Name(), numbers_array.Element.Name())
 	}
 
-	union = numbers_array.Element.(domain.UnionType)
+	union = numbers_array.Element.(*domain.UnionType)
 
 	if union.OneOf[0].Name() != (domain.IntType{}).Name() {
 		test.Fatalf("Wrong union[0] type expected %s, received %s", (domain.IntType{}).Name(), union.OneOf[0].Name())
@@ -161,7 +161,7 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 		test.Fatalf("Wrong union[1] type expected %s, received %s", (domain.FloatType{}).Name(), union.OneOf[1].Name())
 	}
 
-	empty_array := graph.Fields["empty"].(domain.ArrayType)
+	empty_array := graph.Fields["empty"].(*domain.ArrayType)
 
 	if empty_array.Element.Name() != (domain.UnknownType{}).Name() {
 		test.Fatalf("Wrong array element type expected %s, received %s", (domain.UnknownType{}).Name(), empty_array.Element.Name())

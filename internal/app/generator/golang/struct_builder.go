@@ -13,6 +13,8 @@ type struct_builder struct {
 	fields map[string]string
 }
 
+var indent = "  "
+
 func new_struct_builder() *struct_builder {
 	return &struct_builder{fields: make(map[string]string)}
 }

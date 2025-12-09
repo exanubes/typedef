@@ -8,13 +8,13 @@ import (
 	"github.com/exanubes/typedef/internal/utils"
 )
 
-type GolangCodegen struct{}
-
-func New() *GolangCodegen {
-	return &GolangCodegen{}
+type GolangCodegen struct {
+	randomIdProvider func(int) string
 }
 
-var indent = "  "
+func New(randomIdProvider func(int) string) *GolangCodegen {
+	return &GolangCodegen{randomIdProvider: randomIdProvider}
+}
 
 func (generator *GolangCodegen) Generate(root domain.Type) string {
 	code := &strings.Builder{}
@@ -57,13 +57,17 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 		return struct_name
 
 	case *domain.UnionType:
-		struct_name := fmt.Sprintf("UnionType_%s", utils.RandomString(10))
+		struct_name := fmt.Sprintf("UnionType_%s", generator.randomIdProvider(10))
 
 		builder := new_struct_builder()
 		builder.with_name(struct_name)
+		types := []string{}
+		for _, typ := range node.OneOf {
+			types = append(types, generator.dfs(typ, visited, code))
+		}
+		types = utils.SortFields(types)
 
-		for index, typ := range node.OneOf {
-			union_type := generator.dfs(typ, visited, code)
+		for index, union_type := range types {
 			builder.with_field(utils.Letter(index), union_type)
 		}
 
