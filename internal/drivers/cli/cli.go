@@ -65,6 +65,8 @@ func parse_format(input string) (generator.Format, error) {
 
 	case "zod", "ts-zod", "ts_zod", "typescript_zod", "typescript-zod":
 		return generator.ZOD, nil
+	case "jsdoc":
+		return generator.JSDOC, nil
 	}
 
 	return -1, fmt.Errorf("%s is not a valid format", input)
