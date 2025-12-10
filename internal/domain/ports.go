@@ -8,9 +8,28 @@ type CodegenOptions struct {
 	InputType  string
 	OutputType string
 	Input      string
-	Format     int // TODO: is format part of domain?
+	Format     Format
 }
 
 type OutputTarget interface {
 	Send(string) error
+}
+
+type OutputService interface {
+	Send(payload string, options OutputOptions) error
+}
+
+type InputResolver interface {
+	Resolve(input GenerateCommand) (ResolvedInput, error)
+}
+
+type ResolvedInput struct {
+	Data   string
+	Output OutputOptions
+	Format Format
+}
+
+type OutputOptions struct {
+	Target string
+	Path   string
 }

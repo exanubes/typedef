@@ -9,5 +9,5 @@ type CodeGenerator interface {
 }
 
 type Factory interface {
-	Create(Format) CodeGenerator
+	Create(domain.Format) CodeGenerator
 }

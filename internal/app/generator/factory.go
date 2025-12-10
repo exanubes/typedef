@@ -5,31 +5,23 @@ import (
 	"github.com/exanubes/typedef/internal/app/generator/jsdoc"
 	"github.com/exanubes/typedef/internal/app/generator/typescript"
 	"github.com/exanubes/typedef/internal/app/generator/zod"
+	"github.com/exanubes/typedef/internal/domain"
 	"github.com/exanubes/typedef/internal/utils"
 )
 
 type CodegenFactory struct{}
 
-func (factory CodegenFactory) Create(format Format) CodeGenerator {
+func (factory CodegenFactory) Create(format domain.Format) CodeGenerator {
 	switch format {
-	case GOLANG:
+	case domain.GOLANG:
 		return golang.New(utils.RandomString)
-	case TYPESCRIPT:
+	case domain.TYPESCRIPT:
 		return typescript.New()
-	case ZOD:
+	case domain.ZOD:
 		return zod.New()
-	case JSDOC:
+	case domain.JSDOC:
 		return jsdoc.New()
 	}
 
 	return nil
 }
-
-type Format int
-
-const (
-	GOLANG = iota
-	TYPESCRIPT
-	ZOD
-	JSDOC
-)

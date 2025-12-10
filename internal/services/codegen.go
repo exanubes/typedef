@@ -34,15 +34,21 @@ func NewCodegenService(
 func (service *CodegenService) Execute(options domain.CodegenOptions) (string, error) {
 	lexer := service.lexer.Create(options.InputType, options.Input)
 	if lexer == nil {
-		return "", fmt.Errorf("%s format is not supported", options.InputType)
+		return "", fmt.Errorf("%s lexer is not supported", options.InputType)
 	}
+
 	parser := service.parser.Create(options.InputType, lexer)
 	if parser == nil {
-		return "", fmt.Errorf("%s format is not supported", options.InputType)
+		return "", fmt.Errorf("%s parser is not supported", options.InputType)
 	}
+
 	ast := parser.Parse()
 	graph_root := service.graph.Generate(ast)
-	codegen := service.codegen.Create(generator.Format(options.Format))
+
+	codegen := service.codegen.Create(options.Format)
+	if codegen == nil {
+		return "", fmt.Errorf("%s format is not supported", options.Format)
+	}
 
 	return codegen.Generate(graph_root), nil
 }
