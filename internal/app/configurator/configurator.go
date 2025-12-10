@@ -11,7 +11,12 @@ import (
 	"github.com/exanubes/typedef/internal/services"
 )
 
-func New() (domain.CodegenService, domain.OutputTarget) {
+type Options struct {
+	OutputTarget         string
+	OutputTargetFilepath string
+}
+
+func New(options Options) (domain.CodegenService, domain.OutputTarget) {
 	type_pool := dedup.New()
 	return services.NewCodegenService(
 			lexer.LexerFactory{},
@@ -19,5 +24,7 @@ func New() (domain.CodegenService, domain.OutputTarget) {
 			graph.New(type_pool),
 			generator.CodegenFactory{},
 		),
-		targets.Create("json")
+		targets.Create(options.OutputTarget, targets.OutputOptions{
+			Filepath: options.OutputTargetFilepath,
+		})
 }
