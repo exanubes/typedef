@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"github.com/exanubes/typedef/internal/app/configurator"
 	"github.com/exanubes/typedef/internal/app/generator"
 	"github.com/exanubes/typedef/internal/domain"
+	"golang.design/x/clipboard"
 )
 
 func Start(ctx context.Context, args []string) error {
@@ -19,7 +21,12 @@ func Start(ctx context.Context, args []string) error {
 	target_flag := cmd.String("target", "cli", "delivery target for ouput e.g., cli, clipboard")
 	output_path_flag := cmd.String("output-path", "", "path of the file where output should be saved")
 	format_flag := cmd.String("format", "", "desired format for the output e.g., go, ts, ts-zod")
+	err := clipboard.Init()
+	if err != nil {
+		fmt.Println("Clipboard error: ", err.Error())
+	}
 
+	fmt.Println("Clipboard data: ", string(clipboard.Read(clipboard.FmtText)))
 	cmd.Parse(args)
 
 	input, err := parse_input(*input_flag)
@@ -98,11 +105,17 @@ func parse_input(input string) (string, error) {
 	if input != "" {
 		return input, nil
 	}
+
 	stat, _ := os.Stdin.Stat()
 	has_piped_input := (stat.Mode() & os.ModeCharDevice) == 0
 	if has_piped_input {
 		data, err := io.ReadAll(os.Stdin)
 		return string(data), err
+	}
+
+	clipboard_data := clipboard.Read(clipboard.FmtText)
+	if json.Valid(clipboard_data) {
+		return string(clipboard_data), nil
 	}
 
 	return "", fmt.Errorf("No input provided")
