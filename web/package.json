@@ -1,0 +1,17 @@
+{
+    "name": "@typedef/web",
+    "version": "1.0.0",
+    "description": "",
+    "source": "src/index.html",
+    "scripts": {
+        "start": "parcel",
+        "build": "parcel build"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.11.0",
+    "devDependencies": {
+        "parcel": "^2.16.3"
+    }
+}
