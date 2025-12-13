@@ -84,18 +84,13 @@ header {
 }
 
 .logo {
-  display: none;
   height: 36px;
   width: auto;
-  transition: opacity 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
-:root[data-theme="light"] .logo--light {
-    display: block;
-}
-
-:root[data-theme="dark"] .logo--dark {
-    display: block;
+:root[data-theme="dark"] .logo {
+  filter: invert(1);
 }
 
 header a {
@@ -104,10 +99,6 @@ header a {
   color: var(--color-text);
   text-decoration: none;
   transition: color 0.2s ease;
-}
-
-header a:hover {
-  color: var(--color-primary);
 }
 
 header svg {
@@ -155,6 +146,8 @@ header svg path {
 
 .theme-icon-light {
   display: none;
+  width: 24px;
+  height:24px;
 }
 
 .theme-icon-dark {

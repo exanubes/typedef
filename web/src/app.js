@@ -8,7 +8,6 @@ import {
     register_theme_toggle_event,
 } from './js/theme'
 
-console.log("test")
 document.addEventListener('DOMContentLoaded', () => {
     const theme_service = create_theme_service(
         create_theme_storage(),
