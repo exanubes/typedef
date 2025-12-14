@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"flag"
+	"fmt"
 
 	"github.com/exanubes/typedef/internal/app/configurator"
 	"github.com/exanubes/typedef/internal/domain"
@@ -19,16 +20,29 @@ func Start(ctx context.Context, args []string) error {
 	format_flag := cmd.String("format", "", "desired format for the output e.g., go, ts, ts-zod")
 	cmd.Parse(args)
 
-	generate_use_case := usecase.NewGenerateUseCase(
-		services.NewOutputService(targets.TargetFactory{}),
-		services.NewInputService(),
-		configurator.New(),
-	)
+	output_service := services.NewOutputService(targets.TargetFactory{})
 
-	return generate_use_case.Run(domain.GenerateCommand{
+	input_service := services.NewInputService()
+	codegen_service := configurator.New()
+	usecase := usecase.NewGenerateUseCase(input_service, codegen_service)
+
+	output, err := usecase.Run(domain.GenerateCommandInput{
 		Input:      *input_flag,
 		Target:     *target_flag,
 		OutputPath: *output_path_flag,
 		Format:     *format_flag,
 	})
+
+	if err != nil {
+		return fmt.Errorf("Failed execution of generate usecase:\n| %w", err)
+	}
+
+	target, path := input_service.ResolveTarget(*target_flag, *output_path_flag)
+	err = output_service.Send(output.Code, domain.OutputOptions{Target: target, Path: path})
+
+	if err != nil {
+		return fmt.Errorf("Failed to send generated code to selected output '%s':\n| %w", target, err)
+	}
+
+	return nil
 }

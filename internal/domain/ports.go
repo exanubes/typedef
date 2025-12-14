@@ -20,7 +20,7 @@ type OutputService interface {
 }
 
 type InputResolver interface {
-	Resolve(input GenerateCommand) (ResolvedInput, error)
+	Resolve(input GenerateCommandInput) (ResolvedInput, error)
 }
 
 type ResolvedInput struct {
@@ -32,4 +32,10 @@ type ResolvedInput struct {
 type OutputOptions struct {
 	Target string
 	Path   string
+}
+
+type CodegenRequest struct {
+	InputType string `json:"input_type"`
+	Data      string `json:"data"`
+	Format    string `json:"format"`
 }

@@ -19,7 +19,7 @@ func NewInputService() InputService {
 // TODO: make configurable
 var default_path_target = "./typedef.txt"
 
-func (service InputService) Resolve(input domain.GenerateCommand) (domain.ResolvedInput, error) {
+func (service InputService) Resolve(input domain.GenerateCommandInput) (domain.ResolvedInput, error) {
 	data, err := service.parse_input(input.Input)
 	if err != nil {
 		return domain.ResolvedInput{}, err
@@ -45,6 +45,10 @@ func (service InputService) Resolve(input domain.GenerateCommand) (domain.Resolv
 			Path:   output_path,
 		},
 	}, nil
+}
+
+func (service InputService) ResolveTarget(target, path string) (string, string) {
+	return service.parse_target(target, path)
 }
 
 func (service InputService) parse_format(input string) (domain.Format, error) {

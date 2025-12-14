@@ -9,11 +9,11 @@ import (
 )
 
 type mockInputResolver struct {
-	resolveFn func(domain.GenerateCommand) (domain.ResolvedInput, error)
+	resolveFn func(domain.GenerateCommandInput) (domain.ResolvedInput, error)
 	called    bool
 }
 
-func (m *mockInputResolver) Resolve(cmd domain.GenerateCommand) (domain.ResolvedInput, error) {
+func (m *mockInputResolver) Resolve(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
 	m.called = true
 	return m.resolveFn(cmd)
 }
@@ -46,7 +46,7 @@ func TestGenerateUsecase_Run_Success(t *testing.T) {
 	}
 
 	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommand) (domain.ResolvedInput, error) {
+		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
 			return input, nil
 		},
 	}
@@ -71,7 +71,7 @@ func TestGenerateUsecase_Run_Success(t *testing.T) {
 
 	uc := usecase.NewGenerateUseCase(outputMock, inputMock, codegenMock)
 
-	err := uc.Run(domain.GenerateCommand{})
+	err := uc.Run(domain.GenerateCommandInput{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -83,14 +83,14 @@ func TestGenerateUsecase_Run_Success(t *testing.T) {
 
 func TestGenerateUsecase_Run_InputFailure(t *testing.T) {
 	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommand) (domain.ResolvedInput, error) {
+		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
 			return domain.ResolvedInput{}, errors.New("input resolver fail")
 		},
 	}
 
 	uc := usecase.NewGenerateUseCase(nil, inputMock, nil)
 
-	err := uc.Run(domain.GenerateCommand{})
+	err := uc.Run(domain.GenerateCommandInput{})
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -102,7 +102,7 @@ func TestGenerateUsecase_Run_InputFailure(t *testing.T) {
 
 func TestGenerateUsecase_Run_CodegenFailure(t *testing.T) {
 	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommand) (domain.ResolvedInput, error) {
+		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
 			return domain.ResolvedInput{
 				Data:   string([]byte("{}")),
 				Output: domain.OutputOptions{Target: "file"},
@@ -118,7 +118,7 @@ func TestGenerateUsecase_Run_CodegenFailure(t *testing.T) {
 
 	uc := usecase.NewGenerateUseCase(nil, inputMock, codegenMock)
 
-	err := uc.Run(domain.GenerateCommand{})
+	err := uc.Run(domain.GenerateCommandInput{})
 	if err == nil {
 		t.Fatal("expected codegen error")
 	}
@@ -126,7 +126,7 @@ func TestGenerateUsecase_Run_CodegenFailure(t *testing.T) {
 
 func TestGenerateUsecase_Run_OutputFailure(t *testing.T) {
 	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommand) (domain.ResolvedInput, error) {
+		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
 			return domain.ResolvedInput{
 				Data:   string([]byte("{}")),
 				Output: domain.OutputOptions{Target: "file"},
@@ -148,7 +148,7 @@ func TestGenerateUsecase_Run_OutputFailure(t *testing.T) {
 
 	uc := usecase.NewGenerateUseCase(outputMock, inputMock, codegenMock)
 
-	err := uc.Run(domain.GenerateCommand{})
+	err := uc.Run(domain.GenerateCommandInput{})
 	if err == nil {
 		t.Fatal("expected output error")
 	}
