@@ -25,15 +25,15 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_policy" {
 
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   name              = local.lambda_log_group_name
-  retention_in_days = 1 
+  retention_in_days = 7 
 
   tags = local.common_tags
 }
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/../dist/lambda"
-  output_path = "${path.module}/../dist/terraform/typedef-lambda.zip"
+  source_dir  = "${path.module}/../../../dist/lambda"
+  output_path = "${path.module}/../../../dist/lambda/typedef-lambda.zip"
 }
 
 resource "aws_lambda_function" "typedef" {
@@ -65,7 +65,7 @@ resource "aws_apigatewayv2_api" "typedef" {
     allow_origins     = var.api_gateway_cors_allowed_origins
     allow_methods     = var.api_gateway_cors_allowed_methods
     allow_headers     = ["content-type"]
-    expose_headers    = ["content-type", "x-amz-request-id"]
+    expose_headers    = ["content-type", "x-amz-request-id", "x-content-type-options", "referrer-policy"]
     max_age          = var.api_gateway_cors_max_age
     allow_credentials = false
   }

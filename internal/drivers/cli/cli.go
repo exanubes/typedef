@@ -31,6 +31,7 @@ func Start(ctx context.Context, args []string) error {
 		Target:     *target_flag,
 		OutputPath: *output_path_flag,
 		Format:     *format_flag,
+		InputType:  "json",
 	})
 
 	if err != nil {
