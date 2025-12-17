@@ -3,45 +3,47 @@
 import { INPUT_TYPES, TARGET_FORMATS } from "./domain"
 import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeException } from "./errors"
 
-/**
- * @param {HTMLFormElement} form
- * @returns {CodegenRequest}
- * */
-export function create_codegen_request(form) {
-    const formValues = new FormData(form)
+export const codegen_request_factory = {
+    /**
+     * @param {HTMLFormElement} form
+     * @returns {CodegenRequest}
+     * */
+    create(form) {
+        const formValues = new FormData(form)
 
-    const get_input_type = () => {
-        const input_type = formValues.get("input_type").trim()
+        const get_input_type = () => {
+            const input_type = formValues.get("input_type").trim()
 
-        if (!Object.keys(INPUT_TYPES).includes(input_type)) {
-            throw new InvalidInputTypeException(input_type)
+            if (!Object.keys(INPUT_TYPES).includes(input_type)) {
+                throw new InvalidInputTypeException(input_type)
+            }
+
+            return input_type
         }
 
-        return input_type
-    }
+        const get_input = () => {
+            const input = formValues.get("structure-input").trim()
+            if (input.length > 10_000) {
+                throw new ExceededMaxLengthException(10_000)
+            }
 
-    const get_input = () => {
-        const input = formValues.get("structure-input").trim()
-        if (input.length > 10_000) {
-            throw new ExceededMaxLengthException(10_000)
+            return input
         }
 
-        return input
-    }
+        const get_format = () => {
+            const format = formValues.get("format").trim()
+            if (!Object.keys(TARGET_FORMATS).includes(format)) {
+                throw new InvalidFormatException(format)
+            }
 
-    const get_format = () => {
-        const format = formValues.get("format").trim()
-        if (!Object.keys(TARGET_FORMATS).includes(format)) {
-            throw new InvalidFormatException(format)
+            return format
         }
 
-        return format
-    }
-
-    return {
-        input_type: get_input_type,
-        input: get_input,
-        format: get_format,
+        return {
+            input_type: get_input_type,
+            input: get_input,
+            format: get_format,
+        }
     }
 }
 

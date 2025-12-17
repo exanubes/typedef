@@ -40,42 +40,58 @@
     <main>
       <h1>Transform your structures into types or schemas</h1>
 
+
+    <form>
       <section class="controls">
-        <fieldset>
-          <legend>Select output format</legend>
-          <div class="format-options">
-            <label>
-              <input type="radio" name="format" value="golang" checked/>
-              <span>Go</span>
-            </label>
-            <label>
-              <input type="radio" name="format" value="typescript"/>
-              <span>TypeScript</span>
-            </label>
-            <label>
-              <input type="radio" name="format" value="zod"/>
-              <span>Zod</span>
-            </label>
-            <label>
-              <input type="radio" name="format" value="jsdoc"/>
-              <span>JSDoc</span>
-            </label>
-          </div>
-        </fieldset>
+          <fieldset>
+              <legend>Select input format</legend>
+              <div class="format-options">
+                  <label>
+                      <input type="radio" name="input_type" value="json" checked/>
+                      <span>json</span>
+                  </label>
+              </div>
+          </fieldset>
       </section>
 
       <section class="input-section">
-        <label for="json-input">JSON Input</label>
+        <label for="structure-input">JSON Input</label>
         <textarea
-          id="json-input"
+          id="structure-input"
+          name="structure-input"
           placeholder='{"name": "John Doe", "age": 30, "email": "john@example.com"}'
           aria-label="JSON input for type generation"
         ></textarea>
       </section>
 
-      <section class="action-section">
-        <button id="transform-btn" type="button">Transform</button>
+      <section class="controls">
+          <fieldset>
+              <legend>Select output format</legend>
+              <div class="format-options">
+                  <label>
+                      <input type="radio" name="format" value="golang" checked/>
+                      <span>Go</span>
+                  </label>
+                  <label>
+                      <input type="radio" name="format" value="typescript"/>
+                      <span>TypeScript</span>
+                  </label>
+                  <label>
+                      <input type="radio" name="format" value="zod"/>
+                      <span>Zod</span>
+                  </label>
+                  <label>
+                      <input type="radio" name="format" value="jsdoc"/>
+                      <span>JSDoc</span>
+                  </label>
+              </div>
+          </fieldset>
       </section>
+
+      <section class="action-section">
+        <button id="transform-btn" type="submit">Transform</button>
+      </section>
+</form>
 
       <section class="output-section">
         <label for="output-code">Generated Code</label>

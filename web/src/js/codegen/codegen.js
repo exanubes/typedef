@@ -52,7 +52,7 @@ export function create_codegen_service() {
 /**
  * @callback Execute
  * @param {import("./request").CodegenRequest} request
- * @returns {Promise<[import("../api/codegen").CodegenResponse, Error]>}
+ * @returns {Promise<[import("./api").CodegenResponse, Error]>}
  * @throws {CodegenError}
  * */
 
