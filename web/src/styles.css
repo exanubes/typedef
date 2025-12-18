@@ -327,6 +327,48 @@ section {
   display: block;
 }
 
+/* Output Container with Copy Button */
+.output-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Copy Button */
+.copy-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  opacity: 0.8;
+}
+
+.copy-btn:hover {
+  background-color: var(--color-code-bg);
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+.copy-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+}
+
+.copy-icon {
+  width: 20px;
+  height: 20px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   header {
