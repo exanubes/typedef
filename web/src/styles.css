@@ -90,6 +90,7 @@ body {
   font-family: var(--font-body);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -449,8 +450,9 @@ section {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  max-width: 400px;
+  inline-size: min(100vw - 2 * var(--spacing-md), 400px);
   pointer-events: none;
+  isolation: isolate;
 }
 
 .toast {
@@ -591,6 +593,11 @@ section {
 .toast__close svg {
   width: 16px;
   height: 16px;
+}
+
+.toast:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 @media (max-width: 768px) {

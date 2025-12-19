@@ -33,6 +33,9 @@ export async function POST(endpoint, body) {
                 "Content-Type": "application/json"
             }
         })
+        if (response.status < 200 || response.status >= 400) {
+            throw new Error(`Invalid Request`)
+        }
 
         return {
             status: "ok",
