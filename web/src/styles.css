@@ -442,17 +442,16 @@ section {
 }
 
 /* Toast Notifications */
-.toast-container {
+#notification-container {
   position: fixed;
   top: var(--spacing-md);
   right: var(--spacing-md);
   z-index: 1000;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: var(--spacing-sm);
-  inline-size: min(100vw - 2 * var(--spacing-md), 400px);
+  max-width: 400px;
   pointer-events: none;
-  isolation: isolate;
 }
 
 .toast {
@@ -585,8 +584,7 @@ section {
   color: var(--color-text);
 }
 
-.toast__close:focus {
-  outline: none;
+.toast__close:focus { outline: none;
   box-shadow: 0 0 0 2px var(--color-primary);
 }
 
@@ -595,17 +593,10 @@ section {
   height: 16px;
 }
 
-.toast:focus-within {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
 @media (max-width: 768px) {
-  .toast-container {
+  #notification-container {
     top: var(--spacing-sm);
     right: var(--spacing-sm);
-    left: var(--spacing-sm);
-    max-width: none;
   }
 }
 
