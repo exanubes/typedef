@@ -6,9 +6,8 @@
 
 /**
  * @typedef {Object} Client
- * @property {(config: Config)=>Promise<any>} connect
- * @property {(id: string)=>Promise<object>} find
- * @property {(id: string, payload: object)=>Promise<void>} find
+ * @property {(id: string, key_path: string, table: string)=>Promise<object>} find
+ * @property {(payload: object, table: string)=>Promise<void>} write
  * */
 
 

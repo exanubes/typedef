@@ -1,18 +1,17 @@
 'use strict'
 
 /**
- * @param {Config} config
+ * @param {()=>Promise<IDBDatabase>} database
  * @returns {Client}
  * */
-function create_indexdb_client(config) {
-    const connect = create_connection_manager(config)
+function create_indexdb_client(database) {
     const client = {
-        async find(id) {
-            const db = await connect()
+        async find(id, key_path, table) {
+            const db = await database()
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(config.table_name, "readonly")
-                const store = tx.objectStore(config.table_name)
-                const request = store.get({ [config.key_path]: id })
+                const tx = db.transaction(table, "readonly")
+                const store = tx.objectStore(table)
+                const request = store.get({ [key_path]: id })
 
                 request.onerror = () => reject(request.error)
                 tx.oncomplete = () => resolve(request.result)
@@ -21,11 +20,11 @@ function create_indexdb_client(config) {
 
             })
         },
-        async write(payload) {
-            const db = await connect()
+        async write(payload, table) {
+            const db = await database()
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(config.table_name, "readwrite")
-                const store = tx.objectStore(config.table_name)
+                const tx = db.transaction(table, "readwrite")
+                const store = tx.objectStore(table)
                 const request = store.put(payload)
                 request.onerror = () => reject(request.error)
                 tx.oncomplete = () => resolve()
@@ -39,9 +38,9 @@ function create_indexdb_client(config) {
 }
 
 /**
- * @param {Config} config
+ * @param {ManagerConfig} config
  * */
-function create_connection_manager(config) {
+export function create_connection_manager(config) {
     /**
      * @type {IDBDatabase}
      * */
@@ -59,16 +58,7 @@ function create_connection_manager(config) {
             const request = indexedDB.open(config.namespace, config.version);
 
             request.onupgradeneeded = (event) => {
-                const database = request.result;
-                if (event.oldVersion < 1) {
-                    const store = database.createObjectStore(config.table_name, {
-                        keyPath: config.key_path,
-                    });
-
-                    for (const [key, indexConfig] of config.indexes) {
-                        store.createIndex(key, key, indexConfig);
-                    }
-                }
+                config.schema(request.result, event.oldVersion)
             };
 
             request.onsuccess = () => {
@@ -92,6 +82,12 @@ function create_connection_manager(config) {
 }
 
 /**
- * @typedef {import("./types.js").Config} Config
  * @typedef {import("./types.js").Client} Client
+ * */
+
+/**
+ * @typedef {Object} ManagerConfig
+ * @property {string} namespace
+ * @property {number} version
+ * @property {(database: IDBDatabase, version: number)=>void} schema
  * */
