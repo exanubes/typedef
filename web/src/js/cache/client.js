@@ -4,14 +4,14 @@
  * @param {()=>Promise<IDBDatabase>} database
  * @returns {Client}
  * */
-function create_indexdb_client(database) {
+export function create_indexdb_client(database) {
     const client = {
         async find(id, key_path, table) {
             const db = await database()
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(table, "readonly")
                 const store = tx.objectStore(table)
-                const request = store.get({ [key_path]: id })
+                const request = store.get(id)
 
                 request.onerror = () => reject(request.error)
                 tx.oncomplete = () => resolve(request.result)

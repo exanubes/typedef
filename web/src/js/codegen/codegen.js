@@ -15,13 +15,13 @@ export function create_codegen_service(cache_service, hash_service) {
      * */
     const execute = async (request) => {
         try {
-            const input_hash_result = hash_service.hash(request.input())
+            const input_hash_result = await hash_service.hash(JSON.parse(request.input()))
             if (input_hash_result.status == "ok") {
                 const result = await cache_service.find(input_hash_result.value)
                 if (result) {
                     return [{
                         // TODO: replace with output
-                        code: result.output_hash,
+                        code: result.output,
                         format: result.target
                     }, null]
                 }
@@ -36,14 +36,15 @@ export function create_codegen_service(cache_service, hash_service) {
                 return [{ code: "", format: -1 }, new CodegenError(response.message)]
             }
 
-            const output_hash_result = hash_service.hash(response.data.code)
+            const output_hash_result = await hash_service.hash(response.data.code)
 
             if (output_hash_result.status == "ok" && input_hash_result.status == "ok") {
                 await cache_service.write({
                     input: request.input(),
                     input_hash: input_hash_result.value,
                     target: request.format(),
-                    output_hash: output_hash_result.value
+                    output_hash: output_hash_result.value,
+                    output: response.data.code
                 })
             } else {
                 if (input_hash_result.err) {

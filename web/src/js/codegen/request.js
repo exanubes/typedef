@@ -27,6 +27,12 @@ export const codegen_request_factory = {
                 throw new ExceededMaxLengthException(10_000)
             }
 
+            try {
+                JSON.parse(input)
+            } catch (error) {
+                throw new InvalidSyntaxException("json", error)
+            }
+
             return input
         }
 

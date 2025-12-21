@@ -16,7 +16,7 @@ import { create_codegen_driver } from './js/drivers/codegen';
 import { create_clipboard_driver } from './js/drivers/clipboard';
 import { create_clipboard } from './js/clipboard/clipboard';
 import { create_notification_container, create_notification_service } from './js/notification';
-import { create_codegen_input_repository } from './js/cache/repositories/codegen';
+import { create_codegen_input_repository } from './js/cache/repositories/codegen-input';
 import { create_database } from './js/cache/factory';
 import { create_hasher } from './js/hasher/hasher';
 import { serialize } from './js/libs/canonicalize';

@@ -25,12 +25,12 @@ export function create_database_table() {
     }
     return {
         with_namespace(namespace) {
-            if (typeof namespace !== "") return this
+            if (namespace !== "") return this
             config.namespace = namespace
             return this
         },
         with_key_path(key) {
-            if (typeof key !== "") return this
+            if (key !== "") return this
             config.key_path = key
             return this
         },
@@ -39,7 +39,7 @@ export function create_database_table() {
             return this
         },
         with_table_name(name) {
-            if (typeof name !== "") return this
+            if (name !== "") return this
             config.table_name = name;
             return this
         },

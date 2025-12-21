@@ -18,3 +18,9 @@ export class ExceededMaxLengthException extends Error {
         super(`Input value cannot exceed ${max_length}`)
     }
 }
+
+export class InvalidSyntaxException extends Error {
+    constructor(format, cause) {
+        super(`Invalid ${format} syntax`, { cause })
+    }
+}

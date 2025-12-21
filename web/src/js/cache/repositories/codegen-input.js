@@ -18,6 +18,7 @@ export function create_codegen_input_repository(client) {
             result.input = response.canonical_input
             result.target = response.target
             result.output_hash = response.output_hash
+            result.output = response.output
             return result
         },
         async write(payload) {
@@ -27,6 +28,7 @@ export function create_codegen_input_repository(client) {
             req.canonical_input = payload.input
             req.target = payload.target
             req.output_hash = payload.output_hash
+            req.output = payload.output
 
             await client.write(req, CODEGEN_INPUTS_SCHEMA.table_name)
 

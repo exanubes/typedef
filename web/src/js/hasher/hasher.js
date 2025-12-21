@@ -36,7 +36,7 @@ class HasherException extends Error {
 
 /**
  * @typedef {Object} HasherService
- * @property {(input: object)=>HashResult} hash
+ * @property {(input: object)=>Promise<HashResult>} hash
  * */
 
 /**
