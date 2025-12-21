@@ -18,10 +18,13 @@ import { create_clipboard } from './js/clipboard/clipboard';
 import { create_notification_container, create_notification_service } from './js/notification';
 import { create_codegen_input_repository } from './js/cache/repositories/codegen';
 import { create_database } from './js/cache/factory';
+import { create_hasher } from './js/hasher/hasher';
+import { serialize } from './js/libs/canonicalize';
 
 document.addEventListener('DOMContentLoaded', () => {
     const database = create_database()
     const codegen_repository = create_codegen_input_repository(database)
+    const hashing_service = create_hasher(serialize)
 
     const theme_driver = create_theme_service(// TODO: refactor to fit the driver convention
         create_theme_storage('typedef-theme-preference'),
@@ -33,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     )
 
     const codegen_driver = create_codegen_driver(
-        create_codegen_service(codegen_repository),
+        create_codegen_service(codegen_repository, hashing_service),
         codegen_request_factory,
         notification_service,
     )
