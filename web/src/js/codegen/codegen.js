@@ -5,7 +5,7 @@ import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeExc
 
 /**
  * 
- * @param {import("../cache/repositories/codegen").CodegenInputRepository} cache_service // TODO: replace with cache service
+ * @param {import("../indexdb/repositories/codegen").CodegenInputRepository} cache_service // TODO: replace with cache service
  * @param {import("../hasher/hasher").HasherService} hash_service
  * @returns {CodegenService}
  * */
