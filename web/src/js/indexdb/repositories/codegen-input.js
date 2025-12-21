@@ -9,7 +9,6 @@ export function create_codegen_input_repository(client) {
         async find(id) {
             /** @type {TableRow} */
             const response = await client.find(id, CODEGEN_INPUTS_SCHEMA.key_path, CODEGEN_INPUTS_SCHEMA.table_name)
-            console.log("find(id): ", response)
             if (!response) return null
             /** @type {CachedCodegenCommand} */
             const result = {}

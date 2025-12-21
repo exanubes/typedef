@@ -4,8 +4,7 @@ import {
     create_system_media,
     create_theme_service,
     create_theme_storage,
-    create_theme_ui,
-    register_theme_toggle_event,
+    create_theme_ui, register_theme_toggle_event,
 } from './js/theme'
 
 import {
@@ -20,11 +19,13 @@ import { create_codegen_input_repository } from './js/indexdb/repositories/codeg
 import { create_database } from './js/indexdb/factory';
 import { create_hasher } from './js/hasher/hasher';
 import { serialize } from './js/libs/canonicalize';
+import { create_request_cache } from './js/cache/request-cache';
 
 document.addEventListener('DOMContentLoaded', () => {
     const database = create_database()
     const codegen_repository = create_codegen_input_repository(database)
     const hashing_service = create_hasher(serialize)
+    const cache_service = create_request_cache(codegen_repository, hashing_service)
 
     const theme_driver = create_theme_service(// TODO: refactor to fit the driver convention
         create_theme_storage('typedef-theme-preference'),
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     )
 
     const codegen_driver = create_codegen_driver(
-        create_codegen_service(codegen_repository, hashing_service),
+        create_codegen_service(cache_service, hashing_service),
         codegen_request_factory,
         notification_service,
     )

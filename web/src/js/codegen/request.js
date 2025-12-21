@@ -1,7 +1,7 @@
 'use strict'
 
 import { INPUT_TYPES, TARGET_FORMATS } from "./domain"
-import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeException } from "./errors"
+import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeException, InvalidSyntaxException } from "./errors"
 
 export const codegen_request_factory = {
     /**

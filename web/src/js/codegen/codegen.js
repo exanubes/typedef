@@ -5,7 +5,7 @@ import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeExc
 
 /**
  * 
- * @param {import("../indexdb/repositories/codegen").CodegenInputRepository} cache_service // TODO: replace with cache service
+ * @param {import("../cache/request-cache").RequestCache} cache_service // TODO: replace with cache service
  * @param {import("../hasher/hasher").HasherService} hash_service
  * @returns {CodegenService}
  * */
@@ -15,17 +15,14 @@ export function create_codegen_service(cache_service, hash_service) {
      * */
     const execute = async (request) => {
         try {
-            const input_hash_result = await hash_service.hash(JSON.parse(request.input()))
-            if (input_hash_result.status == "ok") {
-                const result = await cache_service.find(input_hash_result.value)
-                if (result) {
-                    return [{
-                        // TODO: replace with output
-                        code: result.output,
-                        format: result.target
-                    }, null]
-                }
+            const cached_item = await cache_service.get(request.input())
+            if (cached_item) {
+                return [{
+                    code: cached_item.output,
+                    format: cached_item.target
+                }, null]
             }
+
             const response = await generateCode({
                 input_type: request.input_type(),
                 data: request.input(),
@@ -36,29 +33,7 @@ export function create_codegen_service(cache_service, hash_service) {
                 return [{ code: "", format: -1 }, new CodegenError(response.message)]
             }
 
-            const output_hash_result = await hash_service.hash(response.data.code)
-
-            if (output_hash_result.status == "ok" && input_hash_result.status == "ok") {
-                await cache_service.write({
-                    input: request.input(),
-                    input_hash: input_hash_result.value,
-                    target: request.format(),
-                    output_hash: output_hash_result.value,
-                    output: response.data.code
-                })
-            } else {
-                if (input_hash_result.err) {
-                    console.error(input_hash_result.err)
-                }
-                if (output_hash_result.err) {
-                    console.error(input_hash_result.err)
-                }
-
-            }
-
-            // TODO::
-            // - Deduplication
-            // - Caching
+            await cache_service.put(request.input(), request.format(), response.data.code)
 
             return [response.data, null]
         } catch (error) {
@@ -67,6 +42,7 @@ export function create_codegen_service(cache_service, hash_service) {
             if (exceptions.some(exception => error instanceof exception)) {
                 return [{ code: "", format: -1 }, new CodegenError("Invalid input", error)]
             }
+            console.error("[CodegenService] " + error)
 
             return [{ code: "", format: -1 }, new CodegenError("Unhandled exception", error)]
         }
