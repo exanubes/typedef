@@ -4,21 +4,29 @@ import { generateCode } from "./api"
 import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeException } from "./errors"
 
 /**
- * @param {import('./input_resolver').CodegenRequest} input_resolver
+ * @param {import("../cache/repositories/codegen").CodegenInputRepository} cache_service
  * @returns {CodegenService}
  * */
-export function create_codegen_service() {
+export function create_codegen_service(cache_service, hash_service) {
     /**
      * @type {Execute}
      * */
     const execute = async (request) => {
         try {
+            const input_hash = hash_service.hash(request.input())
+            const result = await cache_service.find(input_hash)
+            if (result) {
+                return [{
+                    // TODO: replace with output
+                    code: result.output_hash,
+                    format: result.target
+                }, null]
+            }
             const response = await generateCode({
                 input_type: request.input_type(),
                 data: request.input(),
                 format: request.format(),
             })
-
 
             if (response.status === "error") {
                 return [{ code: "", format: -1 }, new CodegenError(response.message)]
