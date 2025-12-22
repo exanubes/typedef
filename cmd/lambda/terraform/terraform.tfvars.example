@@ -5,10 +5,15 @@ environment = "local"
 # Lambda Configuration
 lambda_timeout     = 30  # seconds
 lambda_memory_size = 1024 # MB
+lambda_concurrent_executions = 100
 
 # CORS Configuration
 enable_function_url_cors          = true
 function_url_cors_allowed_origins = ["*"] 
 function_url_cors_allowed_methods = ["POST", "OPTIONS"]
 function_url_cors_max_age         = 86400 # 24 hours
+
+
+api_gateway_rate_limit = 100
+api_gateway_burst_limit = 200
 

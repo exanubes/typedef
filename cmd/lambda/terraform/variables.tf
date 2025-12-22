@@ -54,3 +54,27 @@ variable "api_gateway_cors_max_age" {
   type        = number
   default     = 86400 # 24 hours
 }
+
+variable "api_gateway_cors_max_age" {
+  description = "Max age for CORS preflight cache (seconds)"
+  type        = number
+  default     = 86400 # 24 hours
+}
+
+variable "api_gateway_rate_limit" {
+  description = "Limit requests per second"
+  type        = number
+  default     = 100
+}
+
+variable "api_gateway_burst_limit" {
+  description = "Max requests allowed in short bursts"
+  type        = number
+  default     = 200
+}
+
+variable "lambda_concurrent_executions" {
+  description = "Max concurrent executions"
+  type        = number
+  default     = 100
+}

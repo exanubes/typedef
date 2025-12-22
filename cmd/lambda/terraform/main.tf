@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_policy" {
 
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   name              = local.lambda_log_group_name
-  retention_in_days = 7 
+  retention_in_days = 7
 
   tags = local.common_tags
 }
@@ -37,17 +37,18 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_lambda_function" "typedef" {
-  filename         = data.archive_file.lambda_zip.output_path
-  function_name    = local.lambda_function_name
-  role            = aws_iam_role.lambda_role.arn
-  handler         = local.lambda_handler
-  runtime         = local.lambda_runtime
-  architectures   = local.lambda_architecture
+  filename      = data.archive_file.lambda_zip.output_path
+  function_name = local.lambda_function_name
+  role          = aws_iam_role.lambda_role.arn
+  handler       = local.lambda_handler
+  runtime       = local.lambda_runtime
+  architectures = local.lambda_architecture
 
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  timeout     = var.lambda_timeout
-  memory_size = var.lambda_memory_size
+  timeout     = local.lambda_timeout
+  memory_size = local.lambda_memory_size
+  reserved_concurrent_executions = local.lambda_concurrent_executions
 
   depends_on = [
     aws_cloudwatch_log_group.lambda_logs,
@@ -62,11 +63,11 @@ resource "aws_apigatewayv2_api" "typedef" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins     = var.api_gateway_cors_allowed_origins
-    allow_methods     = var.api_gateway_cors_allowed_methods
+    allow_origins     = local.api_gateway_cors_allowed_origins
+    allow_methods     = local.api_gateway_cors_allowed_methods
     allow_headers     = ["content-type"]
     expose_headers    = ["content-type", "x-amz-request-id", "x-content-type-options", "referrer-policy"]
-    max_age          = var.api_gateway_cors_max_age
+    max_age           = local.api_gateway_cors_max_age
     allow_credentials = false
   }
 
@@ -82,10 +83,10 @@ resource "aws_apigatewayv2_stage" "typedef" {
 }
 
 resource "aws_apigatewayv2_integration" "typedef" {
-  api_id             = aws_apigatewayv2_api.typedef.id
-  integration_type   = "AWS_PROXY"
-  integration_uri    = aws_lambda_function.typedef.invoke_arn
-  integration_method = "POST"
+  api_id                 = aws_apigatewayv2_api.typedef.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.typedef.invoke_arn
+  integration_method     = "POST"
   payload_format_version = "2.0"
 }
 
@@ -93,6 +94,19 @@ resource "aws_apigatewayv2_route" "typedef" {
   api_id    = aws_apigatewayv2_api.typedef.id
   route_key = "POST /codegen"
   target    = "integrations/${aws_apigatewayv2_integration.typedef.id}"
+}
+
+resource "aws_apigatewayv2_stage" "typedef" {
+  api_id      = aws_apigatewayv2_api.typedef.id
+  name        = local.api_gateway_stage_name
+  auto_deploy = true
+
+  default_route_settings {
+    throttling_rate_limit  = local.api_gateway_rate_limit
+    throttling_burst_limit = local.api_gateway_burst_limit
+  }
+
+  tags = local.common_tags
 }
 
 resource "aws_lambda_permission" "api_gateway" {
