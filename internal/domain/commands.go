@@ -1,11 +1,11 @@
 package domain
 
 type GenerateCommandInput struct {
-	Input      string
-	InputType  string
-	Format     string
-	Target     string
-	OutputPath string
+	Input      string `json:"input"`
+	InputType  string `json:"input_type"`
+	Format     string `json:"format"`
+	Target     string `json:"target"`
+	OutputPath string `json:"output_path"`
 }
 
 type GenerateCommandOutput struct {
