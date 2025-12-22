@@ -1,8 +1,8 @@
 package wasm
 
-import "github.com/exanubes/typedef/internal/drivers/rpc"
+import "github.com/exanubes/typedef/internal/rpc"
 
-func Start(input []byte) {
+func Start(input rpc.JSONRPCRequest) rpc.JSONRPCResponse {
 	rpc_router := rpc.NewRouter()
 
 	// TODO:
@@ -11,4 +11,6 @@ func Start(input []byte) {
 	// * run handler with rpc.JSONRPCRequest.Params
 	// * create rpc.JSONRPCResponse
 	// * return
+
+	return rpc.JSONRPCResponse{}
 }
