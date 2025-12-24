@@ -1,10 +1,10 @@
 'use strict'
 
-import { POST } from "../http/http"
+import { POST } from "../libs/http"
 
 /**
  * @param {CodegenRequest} request
- * @returns {Promise<import("../http/http").HttpResponse<CodegenResponse>>}
+ * @returns {Promise<import("../libs/http").HttpResponse<CodegenResponse>>}
  * */
 export async function generateCode(request) {
     return POST("codegen", {
@@ -13,6 +13,7 @@ export async function generateCode(request) {
         "format": request.format,
     })
 }
+
 
 /**
  * @typedef {Object} CodegenResponse
