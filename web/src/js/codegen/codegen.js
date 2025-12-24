@@ -1,15 +1,15 @@
 'use strict'
 
-import { generateCode } from "./api"
 import { ExceededMaxLengthException, InvalidFormatException, InvalidInputTypeException } from "./errors"
 
 /**
  * 
- * @param {import("../cache/request-cache").RequestCache} cache_service // TODO: replace with cache service
+ * @param {import("../cache/request-cache").RequestCache} cache_service
  * @param {import("../hasher/hasher").HasherService} hash_service
+ * @param {import("./commands").CodegenCommandHandler} codegen_handler
  * @returns {CodegenService}
  * */
-export function create_codegen_service(cache_service, hash_service) {
+export function create_codegen_service(cache_service, hash_service, codegen_handler) {
     /**
      * @type {Execute}
      * */
@@ -23,7 +23,7 @@ export function create_codegen_service(cache_service, hash_service) {
                 }, null]
             }
 
-            const response = await generateCode({
+            const response = await codegen_handler.send({
                 input_type: request.input_type(),
                 data: request.input(),
                 format: request.format(),

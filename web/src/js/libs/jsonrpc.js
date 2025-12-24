@@ -55,3 +55,19 @@ export function validate_json_rpc_response(response) {
  * @property {number} id
  * */
 
+/**
+ * @template T
+ * @typedef {Object} JSONRPCResponse
+ * @property {"2.0"} jsonrpc
+ * @property {T}  [result]
+ * @property {number} [id]
+ * @property {JSONRPCError} [error]
+ * */
+
+/**
+ * @typedef {Object} JSONRPCError
+ * @property {number} code
+ * @property {string} [message]
+ * @property {object} [data]
+ * */
+

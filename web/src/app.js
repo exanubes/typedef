@@ -6,7 +6,6 @@ import {
     create_theme_storage,
     create_theme_ui, register_theme_toggle_event,
 } from './js/theme'
-
 import {
     create_codegen_service,
     codegen_request_factory,
@@ -20,6 +19,7 @@ import { create_database } from './js/indexdb/factory';
 import { create_hasher } from './js/hasher/hasher';
 import { serialize } from './js/libs/canonicalize';
 import { create_request_cache } from './js/cache/request-cache';
+import { create_rpc_client } from './js/rpc/client';
 
 document.addEventListener('DOMContentLoaded', () => {
     const database = create_database()
@@ -35,9 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const notification_service = create_notification_service(
         create_notification_container()
     )
+    const rpc_client = create_rpc_client()
 
     const codegen_driver = create_codegen_driver(
-        create_codegen_service(cache_service, hashing_service),
+        create_codegen_service(cache_service, hashing_service, rpc_client),
         codegen_request_factory,
         notification_service,
     )
