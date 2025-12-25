@@ -1,0 +1,11 @@
+Third-Party Notices
+
+This project redistributes `wasm_exec.js` from the Go programming language
+project.
+
+Copyright © The Go Authors
+Licensed under a BSD-style license.
+
+The Go license text can be found at:
+https://golang.org/LICENSE
+
