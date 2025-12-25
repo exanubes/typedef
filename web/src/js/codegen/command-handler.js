@@ -7,7 +7,7 @@ import { parse_codegen_response } from "./commands"
  * @param {import("../rpc/client").RpcClient} client 
  * @returns {import("./commands").CodegenCommandHandler}
  * */
-export function createRPCCodegenCommandHandler(client) {
+export function create_rpc_codegen_command_handler(client) {
     return {
         async send(command) {
             try {

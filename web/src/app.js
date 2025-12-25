@@ -20,6 +20,7 @@ import { create_hasher } from './js/hasher/hasher';
 import { serialize } from './js/libs/canonicalize';
 import { create_request_cache } from './js/cache/request-cache';
 import { create_rpc_client } from './js/rpc/client';
+import { create_rpc_codegen_command_handler } from './js/codegen/command-handler';
 
 document.addEventListener('DOMContentLoaded', () => {
     const database = create_database()
@@ -36,9 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
         create_notification_container()
     )
     const rpc_client = create_rpc_client()
+    const codegen_handler = create_rpc_codegen_command_handler(rpc_client)
 
     const codegen_driver = create_codegen_driver(
-        create_codegen_service(cache_service, hashing_service, rpc_client),
+        create_codegen_service(cache_service, hashing_service, codegen_handler),
         codegen_request_factory,
         notification_service,
     )

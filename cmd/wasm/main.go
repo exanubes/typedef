@@ -11,12 +11,16 @@ import (
 )
 
 var FALLBACK_ERROR_RESPONSE = `{"jsonrpc": "2.0","error":{"code": -32603, "message": "Internal error"}, "id": null}`
+var inbox = make(chan js.Value, 64)
 
-func compile(this js.Value, args []js.Value) any {
-	raw_rpc_request_string := args[0].String()
+// NOTE: declaring in package scope to prevent GC from clearing them
+var handler_func js.Func
+var post_message js.Value
+
+func compile(raw_request string) any {
 	var request rpc.JSONRPCRequest
 
-	if err := json.Unmarshal([]byte(raw_rpc_request_string), &request); err != nil {
+	if err := json.Unmarshal([]byte(raw_request), &request); err != nil {
 		response := rpc.JSONRPCResponse{
 			Version: "2.0",
 			ID:      0,
@@ -44,6 +48,23 @@ func compile(this js.Value, args []js.Value) any {
 	return string(bytes)
 }
 
+func handler(this js.Value, args []js.Value) any {
+	inbox <- args[0]
+	return nil
+}
+
 func main() {
-	js.Global().Set("rpc", js.FuncOf(compile))
+	handler_func = js.FuncOf(handler)
+	post_message = js.Global().Get("postMessage")
+	js.Global().Set("rpc", handler_func)
+
+	go func() {
+		for msg := range inbox {
+			result := compile(msg.String())
+			post_message.Invoke(js.ValueOf(result))
+		}
+	}()
+
+	// NOTE: blocking main func from returning and closing process
+	select {}
 }

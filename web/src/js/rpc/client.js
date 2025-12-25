@@ -1,5 +1,8 @@
 'use strict'
 
+/**
+ * @returns {RpcClient}
+ * */
 export function create_rpc_client() {
     const worker = new Worker(
         new URL("./worker.js", import.meta.url),
@@ -10,11 +13,13 @@ export function create_rpc_client() {
     const pending_requests = new Map()
 
     worker.addEventListener("message", (event) => {
-        const response = JSON.parse(event.data); const entry = pending.get(response.id)
+        const response = JSON.parse(event.data);
+        console.log({ response })
+        const entry = pending_requests.get(response.id)
 
         if (!entry) return;
 
-        pending.delete(response.id)
+        pending_requests.delete(response.id)
 
         if (response.error) {
             entry.reject(response.error)
@@ -24,26 +29,45 @@ export function create_rpc_client() {
     })
 
     worker.addEventListener("error", (error) => {
-        for (const { reject } of pending.values()) {
+        for (const { reject } of pending_requests.values()) {
             reject(error)
         }
 
-        pending.clear()
+        pending_requests.clear()
     })
 
     return {
-        async send(request) {
+        async send(request, timeout_ms = 10_000) {
             return new Promise((resolve, reject) => {
-                pending.set(request.id, { resolve, reject })
-                worker.postMessage(JSON.stringify(jsonRpcRequest))
+                if (pending_requests.has(request.id)) {
+                    throw new Error(`Duplicate request id ${request.id}`)
+                }
+
+                const timer_id = setTimeout(() => {
+                    pending_requests.delete(request.id)
+                    reject(new Error("RPC timeout"))
+                }, timeout_ms)
+
+
+                pending_requests.set(request.id, {
+                    resolve: (value) => {
+                        clearTimeout(timer_id)
+                        resolve(value)
+                    },
+                    reject: (error) => {
+                        clearTimeout(timer_id)
+                        reject(error)
+                    }
+                })
+                worker.postMessage(request)
             })
         },
         close() {
-            for (const { reject } of pending.values()) {
+            for (const { reject } of pending_requests.values()) {
                 reject(new Error("Worker terminated."))
             }
 
-            pending.clear()
+            pending_requests.clear()
             worker.terminate()
         }
     }
@@ -51,11 +75,11 @@ export function create_rpc_client() {
 
 /**
  * @typedef {Object} RpcClient 
- * @property {Send} send
+ * @property {SendRPCCommand} send
  * */
 
 /**
  * @callback SendRPCCommand
  * @param {import("../libs/jsonrpc").JSONRPCRequest<unknown>} request
- * @returns {import("../libs/jsonrpc").JSONRPCResponse<unknown>}
+ * @returns {Promise<import("../libs/jsonrpc").JSONRPCResponse<unknown>>}
  * */
