@@ -11,7 +11,7 @@ import { validate_json_rpc_response } from "../libs/jsonrpc"
 /**
  * @typedef {Object} CodegenRequest
  * @property {import("../codegen/domain").InputType} input_type
- * @property {string} data
+ * @property {string} input
  * @property {import("../codegen/domain").Format} format
  * */
 

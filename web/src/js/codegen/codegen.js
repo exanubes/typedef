@@ -25,7 +25,7 @@ export function create_codegen_service(cache_service, hash_service, codegen_hand
 
             const response = await codegen_handler.send({
                 input_type: request.input_type(),
-                data: request.input(),
+                input: request.input(),
                 format: request.format(),
             })
 

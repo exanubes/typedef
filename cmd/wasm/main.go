@@ -27,6 +27,7 @@ func compile(raw_request string) any {
 			Error: &rpc.RPCError{
 				Code:    rpc.ParseError,
 				Message: err.Error(),
+				Data:    raw_request,
 			},
 		}
 

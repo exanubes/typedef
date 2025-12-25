@@ -14,17 +14,15 @@ export function create_rpc_client() {
 
     worker.addEventListener("message", (event) => {
         const response = JSON.parse(event.data);
-        console.log({ response })
         const entry = pending_requests.get(response.id)
 
         if (!entry) return;
 
-        pending_requests.delete(response.id)
 
         if (response.error) {
             entry.reject(response.error)
         } else {
-            entry.resolve(response.result)
+            entry.resolve(response)
         }
     })
 
@@ -37,7 +35,7 @@ export function create_rpc_client() {
     })
 
     return {
-        async send(request, timeout_ms = 10_000) {
+        async send(request, timeout_ms = 5_000) {
             return new Promise((resolve, reject) => {
                 if (pending_requests.has(request.id)) {
                     throw new Error(`Duplicate request id ${request.id}`)
@@ -52,10 +50,12 @@ export function create_rpc_client() {
                 pending_requests.set(request.id, {
                     resolve: (value) => {
                         clearTimeout(timer_id)
+                        pending_requests.delete(request.id)
                         resolve(value)
                     },
                     reject: (error) => {
                         clearTimeout(timer_id)
+                        pending_requests.delete(request.id)
                         reject(error)
                     }
                 })

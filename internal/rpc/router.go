@@ -14,7 +14,9 @@ type RpcRouter struct {
 }
 
 func NewRouter() *RpcRouter {
-	router := &RpcRouter{}
+	router := &RpcRouter{
+		methods: make(map[string]MethodHandler),
+	}
 	router.register_methods()
 
 	return router
