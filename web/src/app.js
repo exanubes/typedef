@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const codegen_handler = create_rpc_codegen_command_handler(rpc_client)
 
     const codegen_driver = create_codegen_driver(
-        create_codegen_service(cache_service, hashing_service, codegen_handler),
+        create_codegen_service({ put: async () => { }, get: async () => { } }, hashing_service, codegen_handler),
         codegen_request_factory,
         notification_service,
     )
