@@ -9,19 +9,19 @@ import (
 	"github.com/exanubes/typedef/internal/utils"
 )
 
-type ZodCodegen struct{}
+type JSDocCodegen struct{}
 
-func New() *ZodCodegen {
-	return &ZodCodegen{}
+func New() *JSDocCodegen {
+	return &JSDocCodegen{}
 }
 
-func (generator *ZodCodegen) Generate(root domain.Type) string {
+func (generator *JSDocCodegen) Generate(root domain.Type) string {
 	code := &strings.Builder{}
 	visited := map[string]string{}
 	return generator.dfs(root, visited, code)
 }
 
-func (generator *ZodCodegen) dfs(node domain.Type, visited map[string]string, code *strings.Builder) string {
+func (generator *JSDocCodegen) dfs(node domain.Type, visited map[string]string, code *strings.Builder) string {
 	id := node.Canonical()
 	if val, ok := visited[id]; ok {
 		return val
