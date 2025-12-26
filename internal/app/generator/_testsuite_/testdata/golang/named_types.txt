@@ -3,7 +3,7 @@ type User struct {
   Name string
 }
 
-type UnionType_testing struct {
+type UnionType_1 struct {
   A bool
   B int
   C string
@@ -15,7 +15,7 @@ type Root struct {
   Author User
   Cool bool
   Float float64
-  Mixed []UnionType_testing
+  Mixed []UnionType_1
   Numbers []int
   Title string
   User User

@@ -9,16 +9,19 @@ import (
 )
 
 type GolangCodegen struct {
-	randomIdProvider func(int) string
+	id_provider *utils.IdProvider
 }
 
-func New(randomIdProvider func(int) string) *GolangCodegen {
-	return &GolangCodegen{randomIdProvider: randomIdProvider}
+func New() *GolangCodegen {
+	return &GolangCodegen{
+		id_provider: &utils.IdProvider{},
+	}
 }
 
 func (generator *GolangCodegen) Generate(root domain.Type) string {
 	code := &strings.Builder{}
 	visited := map[string]string{}
+	generator.id_provider.Reset()
 	return generator.dfs(root, visited, code)
 }
 func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string, code *strings.Builder) string {
@@ -57,7 +60,7 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 		return struct_name
 
 	case *domain.UnionType:
-		struct_name := fmt.Sprintf("UnionType_%s", generator.randomIdProvider(10))
+		struct_name := fmt.Sprintf("UnionType_%d", generator.id_provider.Next())
 
 		builder := new_struct_builder()
 		builder.with_name(struct_name)

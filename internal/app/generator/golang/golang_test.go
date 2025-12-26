@@ -8,5 +8,5 @@ import (
 )
 
 func TestGolangCodegenSuite(test *testing.T) {
-	testsuite.CodegenTestSuite(test, "golang", golang.New(func(_ int) string { return "testing" }))
+	testsuite.CodegenTestSuite(test, "golang", golang.New())
 }

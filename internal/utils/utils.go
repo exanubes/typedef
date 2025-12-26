@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"crypto/rand"
 	"slices"
 	"strings"
 )
@@ -19,16 +18,6 @@ const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func Letter(index int) string {
 	return string(alpha[index%len(alpha)])
-}
-
-func RandomString(length int) string {
-
-	b := make([]byte, length)
-	rand.Read(b)
-	for i := range b {
-		b[i] = alphanumeric[int(b[i])%len(alphanumeric)]
-	}
-	return string(b)
 }
 
 func SortFields(fields []string) []string {
