@@ -2,43 +2,57 @@ package rpc
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/exanubes/typedef/internal/app/configurator"
 	"github.com/exanubes/typedef/internal/domain"
-	"github.com/exanubes/typedef/internal/services"
 	"github.com/exanubes/typedef/internal/usecase"
 )
 
 type RpcRouter struct {
-	methods map[string]MethodHandler
+	controllers map[string]ControllerHandler
 }
 
 func NewRouter() *RpcRouter {
 	router := &RpcRouter{
-		methods: make(map[string]MethodHandler),
+		controllers: make(map[string]ControllerHandler),
 	}
 	router.register_methods()
 
 	return router
 }
 
-func (router *RpcRouter) Get(method string) (MethodHandler, bool) {
-	handler, exists := router.methods[method]
+func (router *RpcRouter) Get(method string) (ControllerHandler, bool) {
+	handler, exists := router.controllers[method]
 	return handler, exists
 }
 
 func (router *RpcRouter) register_methods() {
-	router.methods["codegen"] = func(id int, params json.RawMessage) (any, error) {
-		var cmd domain.GenerateCommandInput
+	router.controllers["codegen"] = func(id int, params json.RawMessage) (any, error) {
+		var req codegenRPCRequest
 
-		if err := json.Unmarshal(params, &cmd); err != nil {
+		if err := json.Unmarshal(params, &req); err != nil {
 			return nil, err
 		}
 
-		input_service := services.NewInputService()
-		codegen_service := configurator.New()
-		usecase := usecase.NewGenerateUseCase(input_service, codegen_service)
+		format, err := domain.ParseFormat(req.Format)
 
-		return usecase.Run(cmd)
+		if err != nil {
+			return nil, err
+		}
+		input := strings.Trim(req.Input, " ")
+		if input == "" {
+			return nil, fmt.Errorf("Input cannot be empty")
+		}
+
+		codegen_service := configurator.New()
+		usecase := usecase.NewGenerateUseCase(codegen_service)
+
+		return usecase.Run(domain.GenerateCommandInput{
+			Input:     input,
+			InputType: req.InputType,
+			Format:    format,
+		})
 	}
 }

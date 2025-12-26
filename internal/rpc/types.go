@@ -3,10 +3,10 @@ package rpc
 import "encoding/json"
 
 type Router interface {
-	Get(method string) (MethodHandler, bool)
+	Get(method string) (ControllerHandler, bool)
 }
 
-type MethodHandler func(id int, params json.RawMessage) (any, error)
+type ControllerHandler func(id int, params json.RawMessage) (any, error)
 
 type JSONRPCRequest struct {
 	ID     int             `json:"id"`
