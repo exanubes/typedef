@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /**
  * @template T
@@ -26,25 +26,28 @@
  * */
 export async function POST(endpoint, body) {
     try {
-        const response = await fetch(`https://aacg5m35g2.execute-api.eu-central-1.amazonaws.com/local/${endpoint}`, {
-            method: "POST",
-            body: JSON.stringify(body),
-            headers: {
-                "Content-Type": "application/json"
+        const response = await fetch(
+            `https://aacg5m35g2.execute-api.eu-central-1.amazonaws.com/local/${endpoint}`,
+            {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             }
-        })
+        );
         if (response.status < 200 || response.status >= 400) {
-            throw new Error(`Invalid Request`)
+            throw new Error(`Invalid Request`);
         }
 
         return {
-            status: "ok",
-            data: await response.json()
-        }
+            status: 'ok',
+            data: await response.json(),
+        };
     } catch (error) {
         return {
-            status: "error",
-            message: error.message ?? error
-        }
+            status: 'error',
+            message: error.message ?? error,
+        };
     }
 }

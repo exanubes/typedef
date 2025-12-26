@@ -1,11 +1,11 @@
-'use strict'
+'use strict';
 
-import { ThemeSaveException } from "./errors"
-import { is_valid_theme } from "./theme";
+import { ThemeSaveException } from './errors';
+import { is_valid_theme } from './theme';
 
 /**
  * @typedef {import("./theme").Theme} Theme
- * @typedef {Object} ThemeStorage
+ * @typedef {object} ThemeStorage
  * @property {()=>Theme | null} load
  * @property {(theme: Theme)=>void} save
  * */
@@ -15,6 +15,9 @@ import { is_valid_theme } from "./theme";
  * @returns {ThemeStorage}
  * */
 export function create_theme_storage(storage_key) {
+    /**
+     * @returns {Theme | null}
+     */
     const load = () => {
         try {
             const value = localStorage.getItem(storage_key);
@@ -22,7 +25,7 @@ export function create_theme_storage(storage_key) {
         } catch {
             return null;
         }
-    }
+    };
 
     /**
      * @param {Theme} theme
@@ -31,11 +34,12 @@ export function create_theme_storage(storage_key) {
         try {
             localStorage.setItem(storage_key, theme);
         } catch {
-            new ThemeSaveException()
+            new ThemeSaveException();
         }
-    }
+    };
 
     return {
-        load, save
-    }
+        load,
+        save,
+    };
 }

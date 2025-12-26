@@ -1,7 +1,13 @@
-'use strict'
+'use strict';
 
+/**
+ *
+ */
 export class ThemeSaveException extends Error {
+    /**
+     *
+     */
     constructor() {
-        super("Failed to save theme to localstorage")
+        super('Failed to save theme to localstorage');
     }
 }

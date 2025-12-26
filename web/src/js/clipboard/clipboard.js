@@ -3,24 +3,21 @@
  * @returns {ClipboardService}
  * */
 export function create_clipboard(client) {
-
     /**
      * @type {Save}
      * */
     const save = (text) => {
         // TODO:indicate success/failure of the copy to clipboard action in the UI
-        return client.writeText(text)
-    }
+        return client.writeText(text);
+    };
 
     return {
-        save
-    }
+        save,
+    };
 }
 
-
-
 /**
- * @typedef {Object} ClipboardClient
+ * @typedef {object} ClipboardClient
  * @property {(string)=>Promise<void>} writeText
  * */
 

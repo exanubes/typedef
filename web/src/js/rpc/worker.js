@@ -1,25 +1,28 @@
-import './wasm_exec.js'
-import wasm_url from 'url:./main.wasm'
+import './wasm_exec.js';
+import wasm_url from 'url:./main.wasm';
 
 // NOTE: Go ctor is attached to global context by wasm_exec.js
-const go = new Go()
+const go = new Go();
 
-let ready = false
+let ready = false;
 
 let wasm_ready_resolve;
 
-const wasmReady = new Promise(resolve => wasm_ready_resolve = resolve);
+const wasmReady = new Promise((resolve) => (wasm_ready_resolve = resolve));
 (async () => {
-    const response = await fetch(wasm_url)
-    const bytes = await response.arrayBuffer()
+    const response = await fetch(wasm_url);
+    const bytes = await response.arrayBuffer();
 
-    const { instance } = await WebAssembly.instantiate(bytes, go.importObject)
-    go.run(instance)
-    wasm_ready_resolve()
-})()
+    const { instance } = await WebAssembly.instantiate(bytes, go.importObject);
+    go.run(instance);
+    wasm_ready_resolve();
+})();
 
+/**
+ *
+ * @param event
+ */
 self.onmessage = async (event) => {
     await wasmReady;
-    self.rpc(JSON.stringify(event.data))
-}
-
+    self.rpc(JSON.stringify(event.data));
+};

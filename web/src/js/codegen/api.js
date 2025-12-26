@@ -1,28 +1,27 @@
-'use strict'
+'use strict';
 
-import { POST } from "../libs/http"
+import { POST } from '../libs/http';
 
 /**
  * @param {CodegenRequest} request
  * @returns {Promise<import("../libs/http").HttpResponse<CodegenResponse>>}
  * */
 export async function generateCode(request) {
-    return POST("codegen", {
-        "input_type": request.input_type,
-        "data": request.data,
-        "format": request.format,
-    })
+    return POST('codegen', {
+        input_type: request.input_type,
+        data: request.data,
+        format: request.format,
+    });
 }
 
-
 /**
- * @typedef {Object} CodegenResponse
+ * @typedef {object} CodegenResponse
  * @property {string} code
  * @property {number} format
  * */
 
 /**
- * @typedef {Object} CodegenRequest
+ * @typedef {object} CodegenRequest
  * @property {import("../codegen/domain").InputType} input_type
  * @property {string} data
  * @property {import("../codegen/domain").Format} format

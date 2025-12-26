@@ -2,28 +2,53 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-"use strict";
+'use strict';
 
 (() => {
+    /**
+     *
+     */
     const enosys = () => {
-        const err = new Error("not implemented");
-        err.code = "ENOSYS";
+        const err = new Error('not implemented');
+        err.code = 'ENOSYS';
         return err;
     };
 
     if (!globalThis.fs) {
-        let outputBuf = "";
+        let outputBuf = '';
         globalThis.fs = {
-            constants: { O_WRONLY: -1, O_RDWR: -1, O_CREAT: -1, O_TRUNC: -1, O_APPEND: -1, O_EXCL: -1, O_DIRECTORY: -1 }, // unused
+            constants: {
+                O_WRONLY: -1,
+                O_RDWR: -1,
+                O_CREAT: -1,
+                O_TRUNC: -1,
+                O_APPEND: -1,
+                O_EXCL: -1,
+                O_DIRECTORY: -1,
+            }, // unused
+            /**
+             *
+             * @param fd
+             * @param buf
+             */
             writeSync(fd, buf) {
                 outputBuf += decoder.decode(buf);
-                const nl = outputBuf.lastIndexOf("\n");
+                const nl = outputBuf.lastIndexOf('\n');
                 if (nl != -1) {
                     console.log(outputBuf.substring(0, nl));
                     outputBuf = outputBuf.substring(nl + 1);
                 }
                 return buf.length;
             },
+            /**
+             *
+             * @param fd
+             * @param buf
+             * @param offset
+             * @param length
+             * @param position
+             * @param callback
+             */
             write(fd, buf, offset, length, position, callback) {
                 if (offset !== 0 || length !== buf.length || position !== null) {
                     callback(enosys());
@@ -32,81 +57,322 @@
                 const n = this.writeSync(fd, buf);
                 callback(null, n);
             },
-            chmod(path, mode, callback) { callback(enosys()); },
-            chown(path, uid, gid, callback) { callback(enosys()); },
-            close(fd, callback) { callback(enosys()); },
-            fchmod(fd, mode, callback) { callback(enosys()); },
-            fchown(fd, uid, gid, callback) { callback(enosys()); },
-            fstat(fd, callback) { callback(enosys()); },
-            fsync(fd, callback) { callback(null); },
-            ftruncate(fd, length, callback) { callback(enosys()); },
-            lchown(path, uid, gid, callback) { callback(enosys()); },
-            link(path, link, callback) { callback(enosys()); },
-            lstat(path, callback) { callback(enosys()); },
-            mkdir(path, perm, callback) { callback(enosys()); },
-            open(path, flags, mode, callback) { callback(enosys()); },
-            read(fd, buffer, offset, length, position, callback) { callback(enosys()); },
-            readdir(path, callback) { callback(enosys()); },
-            readlink(path, callback) { callback(enosys()); },
-            rename(from, to, callback) { callback(enosys()); },
-            rmdir(path, callback) { callback(enosys()); },
-            stat(path, callback) { callback(enosys()); },
-            symlink(path, link, callback) { callback(enosys()); },
-            truncate(path, length, callback) { callback(enosys()); },
-            unlink(path, callback) { callback(enosys()); },
-            utimes(path, atime, mtime, callback) { callback(enosys()); },
+            /**
+             *
+             * @param path
+             * @param mode
+             * @param callback
+             */
+            chmod(path, mode, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param uid
+             * @param gid
+             * @param callback
+             */
+            chown(path, uid, gid, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param fd
+             * @param callback
+             */
+            close(fd, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param fd
+             * @param mode
+             * @param callback
+             */
+            fchmod(fd, mode, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param fd
+             * @param uid
+             * @param gid
+             * @param callback
+             */
+            fchown(fd, uid, gid, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param fd
+             * @param callback
+             */
+            fstat(fd, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param fd
+             * @param callback
+             */
+            fsync(fd, callback) {
+                callback(null);
+            },
+            /**
+             *
+             * @param fd
+             * @param length
+             * @param callback
+             */
+            ftruncate(fd, length, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param uid
+             * @param gid
+             * @param callback
+             */
+            lchown(path, uid, gid, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param link
+             * @param callback
+             */
+            link(path, link, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param callback
+             */
+            lstat(path, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param perm
+             * @param callback
+             */
+            mkdir(path, perm, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param flags
+             * @param mode
+             * @param callback
+             */
+            open(path, flags, mode, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param fd
+             * @param buffer
+             * @param offset
+             * @param length
+             * @param position
+             * @param callback
+             */
+            read(fd, buffer, offset, length, position, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param callback
+             */
+            readdir(path, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param callback
+             */
+            readlink(path, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param from
+             * @param to
+             * @param callback
+             */
+            rename(from, to, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param callback
+             */
+            rmdir(path, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param callback
+             */
+            stat(path, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param link
+             * @param callback
+             */
+            symlink(path, link, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param length
+             * @param callback
+             */
+            truncate(path, length, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param callback
+             */
+            unlink(path, callback) {
+                callback(enosys());
+            },
+            /**
+             *
+             * @param path
+             * @param atime
+             * @param mtime
+             * @param callback
+             */
+            utimes(path, atime, mtime, callback) {
+                callback(enosys());
+            },
         };
     }
 
     if (!globalThis.process) {
         globalThis.process = {
-            getuid() { return -1; },
-            getgid() { return -1; },
-            geteuid() { return -1; },
-            getegid() { return -1; },
-            getgroups() { throw enosys(); },
+            /**
+             *
+             */
+            getuid() {
+                return -1;
+            },
+            /**
+             *
+             */
+            getgid() {
+                return -1;
+            },
+            /**
+             *
+             */
+            geteuid() {
+                return -1;
+            },
+            /**
+             *
+             */
+            getegid() {
+                return -1;
+            },
+            /**
+             *
+             */
+            getgroups() {
+                throw enosys();
+            },
             pid: -1,
             ppid: -1,
-            umask() { throw enosys(); },
-            cwd() { throw enosys(); },
-            chdir() { throw enosys(); },
-        }
+            /**
+             *
+             */
+            umask() {
+                throw enosys();
+            },
+            /**
+             *
+             */
+            cwd() {
+                throw enosys();
+            },
+            /**
+             *
+             */
+            chdir() {
+                throw enosys();
+            },
+        };
     }
 
     if (!globalThis.path) {
         globalThis.path = {
+            /**
+             *
+             * @param {...any} pathSegments
+             */
             resolve(...pathSegments) {
-                return pathSegments.join("/");
-            }
-        }
+                return pathSegments.join('/');
+            },
+        };
     }
 
     if (!globalThis.crypto) {
-        throw new Error("globalThis.crypto is not available, polyfill required (crypto.getRandomValues only)");
+        throw new Error(
+            'globalThis.crypto is not available, polyfill required (crypto.getRandomValues only)'
+        );
     }
 
     if (!globalThis.performance) {
-        throw new Error("globalThis.performance is not available, polyfill required (performance.now only)");
+        throw new Error(
+            'globalThis.performance is not available, polyfill required (performance.now only)'
+        );
     }
 
     if (!globalThis.TextEncoder) {
-        throw new Error("globalThis.TextEncoder is not available, polyfill required");
+        throw new Error('globalThis.TextEncoder is not available, polyfill required');
     }
 
     if (!globalThis.TextDecoder) {
-        throw new Error("globalThis.TextDecoder is not available, polyfill required");
+        throw new Error('globalThis.TextDecoder is not available, polyfill required');
     }
 
-    const encoder = new TextEncoder("utf-8");
-    const decoder = new TextDecoder("utf-8");
+    const encoder = new TextEncoder('utf-8');
+    const decoder = new TextDecoder('utf-8');
 
+    /**
+     *
+     */
     globalThis.Go = class {
+        /**
+         *
+         */
         constructor() {
-            this.argv = ["js"];
+            this.argv = ['js'];
             this.env = {};
+            /**
+             *
+             * @param code
+             */
             this.exit = (code) => {
                 if (code !== 0) {
-                    console.warn("exit code:", code);
+                    console.warn('exit code:', code);
                 }
             };
             this._exitPromise = new Promise((resolve) => {
@@ -116,21 +382,39 @@
             this._scheduledTimeouts = new Map();
             this._nextCallbackTimeoutID = 1;
 
+            /**
+             *
+             * @param addr
+             * @param v
+             */
             const setInt64 = (addr, v) => {
                 this.mem.setUint32(addr + 0, v, true);
                 this.mem.setUint32(addr + 4, Math.floor(v / 4294967296), true);
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             * @param v
+             */
             const setInt32 = (addr, v) => {
                 this.mem.setUint32(addr + 0, v, true);
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             */
             const getInt64 = (addr) => {
                 const low = this.mem.getUint32(addr + 0, true);
                 const high = this.mem.getInt32(addr + 4, true);
                 return low + high * 4294967296;
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             */
             const loadValue = (addr) => {
                 const f = this.mem.getFloat64(addr, true);
                 if (f === 0) {
@@ -142,12 +426,17 @@
 
                 const id = this.mem.getUint32(addr, true);
                 return this._values[id];
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             * @param v
+             */
             const storeValue = (addr, v) => {
-                const nanHead = 0x7FF80000;
+                const nanHead = 0x7ff80000;
 
-                if (typeof v === "number" && v !== 0) {
+                if (typeof v === 'number' && v !== 0) {
                     if (isNaN(v)) {
                         this.mem.setUint32(addr + 4, nanHead, true);
                         this.mem.setUint32(addr, 0, true);
@@ -175,31 +464,39 @@
                 this._goRefCounts[id]++;
                 let typeFlag = 0;
                 switch (typeof v) {
-                    case "object":
+                    case 'object':
                         if (v !== null) {
                             typeFlag = 1;
                         }
                         break;
-                    case "string":
+                    case 'string':
                         typeFlag = 2;
                         break;
-                    case "symbol":
+                    case 'symbol':
                         typeFlag = 3;
                         break;
-                    case "function":
+                    case 'function':
                         typeFlag = 4;
                         break;
                 }
                 this.mem.setUint32(addr + 4, nanHead | typeFlag, true);
                 this.mem.setUint32(addr, id, true);
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             */
             const loadSlice = (addr) => {
                 const array = getInt64(addr + 0);
                 const len = getInt64(addr + 8);
                 return new Uint8Array(this._inst.exports.mem.buffer, array, len);
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             */
             const loadSliceOfValues = (addr) => {
                 const array = getInt64(addr + 0);
                 const len = getInt64(addr + 8);
@@ -208,22 +505,36 @@
                     a[i] = loadValue(array + i * 8);
                 }
                 return a;
-            }
+            };
 
+            /**
+             *
+             * @param addr
+             */
             const loadString = (addr) => {
                 const saddr = getInt64(addr + 0);
                 const len = getInt64(addr + 8);
                 return decoder.decode(new DataView(this._inst.exports.mem.buffer, saddr, len));
-            }
+            };
 
+            /**
+             *
+             * @param a
+             * @param b
+             */
             const testCallExport = (a, b) => {
                 this._inst.exports.testExport0();
                 return this._inst.exports.testExport(a, b);
-            }
+            };
 
             const timeOrigin = Date.now() - performance.now();
             this.importObject = {
                 _gotest: {
+                    /**
+                     *
+                     * @param a
+                     * @param b
+                     */
                     add: (a, b) => a + b,
                     callExport: testCallExport,
                 },
@@ -234,7 +545,11 @@
                     // This changes the SP, thus we have to update the SP used by the imported function.
 
                     // func wasmExit(code int32)
-                    "runtime.wasmExit": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.wasmExit': (sp) => {
                         sp >>>= 0;
                         const code = this.mem.getInt32(sp + 8, true);
                         this.exited = true;
@@ -247,7 +562,11 @@
                     },
 
                     // func wasmWrite(fd uintptr, p unsafe.Pointer, n int32)
-                    "runtime.wasmWrite": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.wasmWrite': (sp) => {
                         sp >>>= 0;
                         const fd = getInt64(sp + 8);
                         const p = getInt64(sp + 16);
@@ -256,47 +575,70 @@
                     },
 
                     // func resetMemoryDataView()
-                    "runtime.resetMemoryDataView": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.resetMemoryDataView': (sp) => {
                         sp >>>= 0;
                         this.mem = new DataView(this._inst.exports.mem.buffer);
                     },
 
                     // func nanotime1() int64
-                    "runtime.nanotime1": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.nanotime1': (sp) => {
                         sp >>>= 0;
                         setInt64(sp + 8, (timeOrigin + performance.now()) * 1000000);
                     },
 
                     // func walltime() (sec int64, nsec int32)
-                    "runtime.walltime": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.walltime': (sp) => {
                         sp >>>= 0;
-                        const msec = (new Date).getTime();
+                        const msec = new Date().getTime();
                         setInt64(sp + 8, msec / 1000);
                         this.mem.setInt32(sp + 16, (msec % 1000) * 1000000, true);
                     },
 
                     // func scheduleTimeoutEvent(delay int64) int32
-                    "runtime.scheduleTimeoutEvent": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.scheduleTimeoutEvent': (sp) => {
                         sp >>>= 0;
                         const id = this._nextCallbackTimeoutID;
                         this._nextCallbackTimeoutID++;
-                        this._scheduledTimeouts.set(id, setTimeout(
-                            () => {
-                                this._resume();
-                                while (this._scheduledTimeouts.has(id)) {
-                                    // for some reason Go failed to register the timeout event, log and try again
-                                    // (temporary workaround for https://github.com/golang/go/issues/28975)
-                                    console.warn("scheduleTimeoutEvent: missed timeout event");
+                        this._scheduledTimeouts.set(
+                            id,
+                            setTimeout(
+                                () => {
                                     this._resume();
-                                }
-                            },
-                            getInt64(sp + 8),
-                        ));
+                                    while (this._scheduledTimeouts.has(id)) {
+                                        // for some reason Go failed to register the timeout event, log and try again
+                                        // (temporary workaround for https://github.com/golang/go/issues/28975)
+                                        console.warn('scheduleTimeoutEvent: missed timeout event');
+                                        this._resume();
+                                    }
+                                },
+                                getInt64(sp + 8)
+                            )
+                        );
                         this.mem.setInt32(sp + 16, id, true);
                     },
 
                     // func clearTimeoutEvent(id int32)
-                    "runtime.clearTimeoutEvent": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.clearTimeoutEvent': (sp) => {
                         sp >>>= 0;
                         const id = this.mem.getInt32(sp + 8, true);
                         clearTimeout(this._scheduledTimeouts.get(id));
@@ -304,13 +646,21 @@
                     },
 
                     // func getRandomData(r []byte)
-                    "runtime.getRandomData": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'runtime.getRandomData': (sp) => {
                         sp >>>= 0;
                         crypto.getRandomValues(loadSlice(sp + 8));
                     },
 
                     // func finalizeRef(v ref)
-                    "syscall/js.finalizeRef": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.finalizeRef': (sp) => {
                         sp >>>= 0;
                         const id = this.mem.getUint32(sp + 8, true);
                         this._goRefCounts[id]--;
@@ -323,13 +673,21 @@
                     },
 
                     // func stringVal(value string) ref
-                    "syscall/js.stringVal": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.stringVal': (sp) => {
                         sp >>>= 0;
                         storeValue(sp + 24, loadString(sp + 8));
                     },
 
                     // func valueGet(v ref, p string) ref
-                    "syscall/js.valueGet": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueGet': (sp) => {
                         sp >>>= 0;
                         const result = Reflect.get(loadValue(sp + 8), loadString(sp + 16));
                         sp = this._inst.exports.getsp() >>> 0; // see comment above
@@ -337,31 +695,51 @@
                     },
 
                     // func valueSet(v ref, p string, x ref)
-                    "syscall/js.valueSet": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueSet': (sp) => {
                         sp >>>= 0;
                         Reflect.set(loadValue(sp + 8), loadString(sp + 16), loadValue(sp + 32));
                     },
 
                     // func valueDelete(v ref, p string)
-                    "syscall/js.valueDelete": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueDelete': (sp) => {
                         sp >>>= 0;
                         Reflect.deleteProperty(loadValue(sp + 8), loadString(sp + 16));
                     },
 
                     // func valueIndex(v ref, i int) ref
-                    "syscall/js.valueIndex": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueIndex': (sp) => {
                         sp >>>= 0;
                         storeValue(sp + 24, Reflect.get(loadValue(sp + 8), getInt64(sp + 16)));
                     },
 
                     // valueSetIndex(v ref, i int, x ref)
-                    "syscall/js.valueSetIndex": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueSetIndex': (sp) => {
                         sp >>>= 0;
                         Reflect.set(loadValue(sp + 8), getInt64(sp + 16), loadValue(sp + 24));
                     },
 
                     // func valueCall(v ref, m string, args []ref) (ref, bool)
-                    "syscall/js.valueCall": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueCall': (sp) => {
                         sp >>>= 0;
                         try {
                             const v = loadValue(sp + 8);
@@ -379,7 +757,11 @@
                     },
 
                     // func valueInvoke(v ref, args []ref) (ref, bool)
-                    "syscall/js.valueInvoke": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueInvoke': (sp) => {
                         sp >>>= 0;
                         try {
                             const v = loadValue(sp + 8);
@@ -396,7 +778,11 @@
                     },
 
                     // func valueNew(v ref, args []ref) (ref, bool)
-                    "syscall/js.valueNew": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueNew': (sp) => {
                         sp >>>= 0;
                         try {
                             const v = loadValue(sp + 8);
@@ -413,13 +799,21 @@
                     },
 
                     // func valueLength(v ref) int
-                    "syscall/js.valueLength": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueLength': (sp) => {
                         sp >>>= 0;
                         setInt64(sp + 16, parseInt(loadValue(sp + 8).length));
                     },
 
                     // valuePrepareString(v ref) (ref, int)
-                    "syscall/js.valuePrepareString": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valuePrepareString': (sp) => {
                         sp >>>= 0;
                         const str = encoder.encode(String(loadValue(sp + 8)));
                         storeValue(sp + 16, str);
@@ -427,20 +821,35 @@
                     },
 
                     // valueLoadString(v ref, b []byte)
-                    "syscall/js.valueLoadString": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueLoadString': (sp) => {
                         sp >>>= 0;
                         const str = loadValue(sp + 8);
                         loadSlice(sp + 16).set(str);
                     },
 
                     // func valueInstanceOf(v ref, t ref) bool
-                    "syscall/js.valueInstanceOf": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.valueInstanceOf': (sp) => {
                         sp >>>= 0;
-                        this.mem.setUint8(sp + 24, (loadValue(sp + 8) instanceof loadValue(sp + 16)) ? 1 : 0);
+                        this.mem.setUint8(
+                            sp + 24,
+                            loadValue(sp + 8) instanceof loadValue(sp + 16) ? 1 : 0
+                        );
                     },
 
                     // func copyBytesToGo(dst []byte, src ref) (int, bool)
-                    "syscall/js.copyBytesToGo": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.copyBytesToGo': (sp) => {
                         sp >>>= 0;
                         const dst = loadSlice(sp + 8);
                         const src = loadValue(sp + 32);
@@ -455,7 +864,11 @@
                     },
 
                     // func copyBytesToJS(dst ref, src []byte) (int, bool)
-                    "syscall/js.copyBytesToJS": (sp) => {
+                    /**
+                     *
+                     * @param sp
+                     */
+                    'syscall/js.copyBytesToJS': (sp) => {
                         sp >>>= 0;
                         const dst = loadValue(sp + 8);
                         const src = loadSlice(sp + 16);
@@ -469,20 +882,29 @@
                         this.mem.setUint8(sp + 48, 1);
                     },
 
-                    "debug": (value) => {
+                    /**
+                     *
+                     * @param value
+                     */
+                    debug: (value) => {
                         console.log(value);
                     },
-                }
+                },
             };
         }
 
+        /**
+         *
+         * @param instance
+         */
         async run(instance) {
             if (!(instance instanceof WebAssembly.Instance)) {
-                throw new Error("Go.run: WebAssembly.Instance expected");
+                throw new Error('Go.run: WebAssembly.Instance expected');
             }
             this._inst = instance;
             this.mem = new DataView(this._inst.exports.mem.buffer);
-            this._values = [ // JS values that Go currently has references to, indexed by reference id
+            this._values = [
+                // JS values that Go currently has references to, indexed by reference id
                 NaN,
                 0,
                 null,
@@ -492,7 +914,8 @@
                 this,
             ];
             this._goRefCounts = new Array(this._values.length).fill(Infinity); // number of references that Go has to a JS value, indexed by reference id
-            this._ids = new Map([ // mapping from JS values to reference ids
+            this._ids = new Map([
+                // mapping from JS values to reference ids
                 [0, 1],
                 [null, 2],
                 [true, 3],
@@ -500,15 +923,19 @@
                 [globalThis, 5],
                 [this, 6],
             ]);
-            this._idPool = [];   // unused ids that have been garbage collected
+            this._idPool = []; // unused ids that have been garbage collected
             this.exited = false; // whether the Go program has exited
 
             // Pass command line arguments and environment variables to WebAssembly by writing them to the linear memory.
             let offset = 4096;
 
+            /**
+             *
+             * @param str
+             */
             const strPtr = (str) => {
                 const ptr = offset;
-                const bytes = encoder.encode(str + "\0");
+                const bytes = encoder.encode(str + '\0');
                 new Uint8Array(this.mem.buffer, offset, bytes.length).set(bytes);
                 offset += bytes.length;
                 if (offset % 8 !== 0) {
@@ -542,7 +969,9 @@
             // Keep in sync with cmd/link/internal/ld/data.go:wasmMinDataAddr.
             const wasmMinDataAddr = 4096 + 8192;
             if (offset >= wasmMinDataAddr) {
-                throw new Error("total length of command line and environment variables exceeds limit");
+                throw new Error(
+                    'total length of command line and environment variables exceeds limit'
+                );
             }
 
             this._inst.exports.run(argc, argv);
@@ -552,9 +981,12 @@
             await this._exitPromise;
         }
 
+        /**
+         *
+         */
         _resume() {
             if (this.exited) {
-                throw new Error("Go program has already exited");
+                throw new Error('Go program has already exited');
             }
             this._inst.exports.resume();
             if (this.exited) {
@@ -562,14 +994,18 @@
             }
         }
 
+        /**
+         *
+         * @param id
+         */
         _makeFuncWrapper(id) {
             const go = this;
-            return function() {
+            return function () {
                 const event = { id: id, this: this, args: arguments };
                 go._pendingEvent = event;
                 go._resume();
                 return event.result;
             };
         }
-    }
+    };
 })();

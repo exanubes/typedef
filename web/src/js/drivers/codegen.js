@@ -11,34 +11,36 @@ export function create_codegen_driver(codegen_service, request_factory, notifica
     const start = (form, button) => {
         form.addEventListener('submit', async (event) => {
             try {
-                event.preventDefault()
+                event.preventDefault();
 
-                button.setAttribute("disabled", "true")
+                button.setAttribute('disabled', 'true');
 
-                const [data, error] = await codegen_service.execute(request_factory.create(event.target))
+                const [data, error] = await codegen_service.execute(
+                    request_factory.create(event.target)
+                );
                 if (error) {
-                    notification_service.show_error(error.message || 'Failed to generate code')
-                    button.removeAttribute("disabled")
-                    return
+                    notification_service.show_error(error.message || 'Failed to generate code');
+                    button.removeAttribute('disabled');
+                    return;
                 }
 
-                const output_container = document.getElementById("output-code")
-                output_container.innerText = data.code
-                notification_service.show_success('Code generated successfully!')
-                button.removeAttribute("disabled")
+                const output_container = document.getElementById('output-code');
+                output_container.innerText = data.code;
+                notification_service.show_success('Code generated successfully!');
+                button.removeAttribute('disabled');
             } catch (error) {
-                notification_service.show_error(error.message)
+                notification_service.show_error(error.message);
             }
-        })
-    }
+        });
+    };
 
     return {
-        start
-    }
+        start,
+    };
 }
 
 /**
- * @typedef {Object} CodegenDriver
+ * @typedef {object} CodegenDriver
  * @property {Start} start
  * */
 
@@ -48,4 +50,3 @@ export function create_codegen_driver(codegen_service, request_factory, notifica
  * @param {HTMLButtonElement} button
  * @returns { void }
  * */
-

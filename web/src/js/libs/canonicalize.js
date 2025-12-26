@@ -1,9 +1,10 @@
 'use strict';
 
-
 /**
  * Source: https://github.com/erdtman/canonicalize
- * @param {Object} object - Any valid json object
+ *
+ * @param {object} object Any valid json object
+ * @returns {string}
  * */
 export function serialize(object) {
     if (typeof object === 'number' && isNaN(object)) {
@@ -31,13 +32,14 @@ export function serialize(object) {
         return `[${values}]`;
     }
 
-    const values = Object.keys(object).sort().reduce((t, cv) => {
-        if (object[cv] === undefined ||
-            typeof object[cv] === 'symbol') {
-            return t;
-        }
-        const comma = t.length === 0 ? '' : ',';
-        return `${t}${comma}${serialize(cv)}:${serialize(object[cv])}`;
-    }, '');
+    const values = Object.keys(object)
+        .sort()
+        .reduce((t, cv) => {
+            if (object[cv] === undefined || typeof object[cv] === 'symbol') {
+                return t;
+            }
+            const comma = t.length === 0 ? '' : ',';
+            return `${t}${comma}${serialize(cv)}:${serialize(object[cv])}`;
+        }, '');
     return `{${values}}`;
-};
+}
