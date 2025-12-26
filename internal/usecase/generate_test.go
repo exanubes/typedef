@@ -1,155 +1,178 @@
-package usecase_test
+package usecase
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/exanubes/typedef/internal/domain"
-	"github.com/exanubes/typedef/internal/usecase"
 )
 
-type mockInputResolver struct {
-	resolveFn func(domain.GenerateCommandInput) (domain.ResolvedInput, error)
-	called    bool
+// MockCodegenService implements domain.CodegenService for testing
+type MockCodegenService struct {
+	ExecuteFunc   func(opts domain.CodegenOptions) (string, error)
+	ExecuteCalled bool
+	LastOptions   domain.CodegenOptions
 }
 
-func (m *mockInputResolver) Resolve(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
-	m.called = true
-	return m.resolveFn(cmd)
-}
-
-type mockCodegen struct {
-	execFn func(domain.CodegenOptions) (string, error)
-	called bool
-}
-
-func (m *mockCodegen) Execute(opts domain.CodegenOptions) (string, error) {
-	m.called = true
-	return m.execFn(opts)
-}
-
-type mockOutput struct {
-	sendFn func(string, domain.OutputOptions) error
-	called bool
-}
-
-func (m *mockOutput) Send(code string, out domain.OutputOptions) error {
-	m.called = true
-	return m.sendFn(code, out)
+func (m *MockCodegenService) Execute(opts domain.CodegenOptions) (string, error) {
+	m.ExecuteCalled = true
+	m.LastOptions = opts
+	if m.ExecuteFunc != nil {
+		return m.ExecuteFunc(opts)
+	}
+	return "", nil
 }
 
 func TestGenerateUsecase_Run_Success(t *testing.T) {
-	input := domain.ResolvedInput{
-		Data:   string([]byte(`{"foo":"bar"}`)),
-		Format: domain.TYPESCRIPT,
-		Output: domain.OutputOptions{Target: "cli"},
-	}
-
-	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
-			return input, nil
+	expectedCode := "type User struct {\n\tName string\n}"
+	mock := &MockCodegenService{
+		ExecuteFunc: func(opts domain.CodegenOptions) (string, error) {
+			return expectedCode, nil
 		},
 	}
 
-	codegenMock := &mockCodegen{
-		execFn: func(opts domain.CodegenOptions) (string, error) {
-			if opts.InputType != "json" {
-				t.Fatalf("expected json input type")
-			}
+	usecase := NewGenerateUseCase(mock)
+	input := domain.GenerateCommandInput{
+		Input:     `{"name": "John"}`,
+		InputType: "json",
+		Format:    domain.GOLANG,
+	}
+
+	output, err := usecase.Run(input)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got: %v", err)
+	}
+
+	if output.Code != expectedCode {
+		t.Fatalf("Expected code %q, got: %q", expectedCode, output.Code)
+	}
+
+	if output.Format != domain.GOLANG {
+		t.Fatalf("Expected format %v, got: %v", domain.GOLANG, output.Format)
+	}
+
+	if !mock.ExecuteCalled {
+		t.Fatal("Expected Execute to be called")
+	}
+}
+
+func TestGenerateUsecase_Run_ErrorPropagation(t *testing.T) {
+	expectedError := errors.New("lexer failed to parse")
+	mock := &MockCodegenService{
+		ExecuteFunc: func(opts domain.CodegenOptions) (string, error) {
+			return "", expectedError
+		},
+	}
+
+	usecase := NewGenerateUseCase(mock)
+	input := domain.GenerateCommandInput{
+		Input:     `{"name": "John"}`,
+		InputType: "json",
+		Format:    domain.TYPESCRIPT,
+	}
+
+	output, err := usecase.Run(input)
+
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "Failed execution of codegen service") {
+		t.Fatalf("Expected error to contain context message, got: %v", err)
+	}
+
+	if !errors.Is(err, expectedError) {
+		t.Fatalf("Expected error to wrap original error %v, got: %v", expectedError, err)
+	}
+
+	if output.Code != "" {
+		t.Fatalf("Expected empty code on error, got: %q", output.Code)
+	}
+}
+
+func TestGenerateUsecase_Run_InputMapping(t *testing.T) {
+	mock := &MockCodegenService{
+		ExecuteFunc: func(opts domain.CodegenOptions) (string, error) {
 			return "generated code", nil
 		},
 	}
 
-	outputMock := &mockOutput{
-		sendFn: func(code string, out domain.OutputOptions) error {
-			if code != "generated code" {
-				t.Fatalf("unexpected code: %s", code)
-			}
-			return nil
-		},
+	usecase := NewGenerateUseCase(mock)
+	input := domain.GenerateCommandInput{
+		Input:     `{"user": {"id": 1, "name": "Alice"}}`,
+		InputType: "json",
+		Format:    domain.ZOD,
 	}
 
-	uc := usecase.NewGenerateUseCase(outputMock, inputMock, codegenMock)
-
-	err := uc.Run(domain.GenerateCommandInput{})
+	_, err := usecase.Run(input)
 
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if !inputMock.called || !codegenMock.called || !outputMock.called {
-		t.Fatalf("expected all ports to be called")
-	}
-}
-
-func TestGenerateUsecase_Run_InputFailure(t *testing.T) {
-	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
-			return domain.ResolvedInput{}, errors.New("input resolver fail")
-		},
+		t.Fatalf("Expected no error, got: %v", err)
 	}
 
-	uc := usecase.NewGenerateUseCase(nil, inputMock, nil)
-
-	err := uc.Run(domain.GenerateCommandInput{})
-	if err == nil {
-		t.Fatal("expected error")
+	if mock.LastOptions.Input != input.Input {
+		t.Fatalf("Expected Input %q, got: %q", input.Input, mock.LastOptions.Input)
 	}
 
-	if !inputMock.called {
-		t.Fatal("input resolver not called")
+	if mock.LastOptions.InputType != input.InputType {
+		t.Fatalf("Expected InputType %q, got: %q", input.InputType, mock.LastOptions.InputType)
+	}
+
+	if mock.LastOptions.Format != input.Format {
+		t.Fatalf("Expected Format %v, got: %v", input.Format, mock.LastOptions.Format)
 	}
 }
 
-func TestGenerateUsecase_Run_CodegenFailure(t *testing.T) {
-	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
-			return domain.ResolvedInput{
-				Data:   string([]byte("{}")),
-				Output: domain.OutputOptions{Target: "file"},
-			}, nil
-		},
+func TestGenerateUsecase_Run_FormatPreservation(t *testing.T) {
+	testCases := []struct {
+		name   string
+		format domain.Format
+	}{
+		{"golang format", domain.GOLANG},
+		{"typescript format", domain.TYPESCRIPT},
+		{"zod format", domain.ZOD},
+		{"jsdoc format", domain.JSDOC},
 	}
 
-	codegenMock := &mockCodegen{
-		execFn: func(opts domain.CodegenOptions) (string, error) {
-			return "", errors.New("codegen fail")
-		},
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mock := &MockCodegenService{
+				ExecuteFunc: func(opts domain.CodegenOptions) (string, error) {
+					return "generated code", nil
+				},
+			}
 
-	uc := usecase.NewGenerateUseCase(nil, inputMock, codegenMock)
+			usecase := NewGenerateUseCase(mock)
+			input := domain.GenerateCommandInput{
+				Input:     `{"test": true}`,
+				InputType: "json",
+				Format:    tc.format,
+			}
 
-	err := uc.Run(domain.GenerateCommandInput{})
-	if err == nil {
-		t.Fatal("expected codegen error")
+			output, err := usecase.Run(input)
+
+			if err != nil {
+				t.Fatalf("Expected no error, got: %v", err)
+			}
+
+			if output.Format != tc.format {
+				t.Fatalf("Expected format %v, got: %v", tc.format, output.Format)
+			}
+		})
 	}
 }
 
-func TestGenerateUsecase_Run_OutputFailure(t *testing.T) {
-	inputMock := &mockInputResolver{
-		resolveFn: func(cmd domain.GenerateCommandInput) (domain.ResolvedInput, error) {
-			return domain.ResolvedInput{
-				Data:   string([]byte("{}")),
-				Output: domain.OutputOptions{Target: "file"},
-			}, nil
-		},
+func TestNewGenerateUseCase(t *testing.T) {
+	mock := &MockCodegenService{}
+	usecase := NewGenerateUseCase(mock)
+
+	if usecase == nil {
+		t.Fatal("Expected usecase to be non-nil")
 	}
 
-	codegenMock := &mockCodegen{
-		execFn: func(opts domain.CodegenOptions) (string, error) {
-			return "ok", nil
-		},
-	}
-
-	outputMock := &mockOutput{
-		sendFn: func(code string, out domain.OutputOptions) error {
-			return errors.New("output fail")
-		},
-	}
-
-	uc := usecase.NewGenerateUseCase(outputMock, inputMock, codegenMock)
-
-	err := uc.Run(domain.GenerateCommandInput{})
-	if err == nil {
-		t.Fatal("expected output error")
+	if usecase.codegen != mock {
+		t.Fatal("Expected usecase.codegen to be set to provided service")
 	}
 }
