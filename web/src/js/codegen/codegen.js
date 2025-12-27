@@ -4,6 +4,7 @@ import {
     ExceededMaxLengthException,
     InvalidFormatException,
     InvalidInputTypeException,
+    InvalidSyntaxException,
 } from './errors';
 
 /**
@@ -33,10 +34,11 @@ export function create_codegen_service(codegen_handler) {
                 InvalidInputTypeException,
                 InvalidFormatException,
                 ExceededMaxLengthException,
+                InvalidSyntaxException,
             ];
 
             if (exceptions.some((exception) => error instanceof exception)) {
-                return [{ code: '', format: -1 }, new CodegenError('Invalid input', error)];
+                return [{ code: '', format: -1 }, error];
             }
 
             return [{ code: '', format: -1 }, new CodegenError('Unhandled exception', error)];

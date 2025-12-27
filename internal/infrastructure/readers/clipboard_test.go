@@ -1,22 +1,32 @@
+//go:build !integration
+
 package readers
 
 import (
 	"testing"
-
-	"github.com/exanubes/typedef/internal/infrastructure/clipboard"
 )
+
+type mockClipboard struct{}
+
+func (mock mockClipboard) Read() (string, error) {
+	return "", nil
+}
+
+func (mock mockClipboard) Write(input string) error {
+	return nil
+}
 
 func TestClipboardReader_Read(t *testing.T) {
 
 	t.Run("clipboard reader can be instantiated", func(t *testing.T) {
-		reader := NewClipboardReader(clipboard.New())
+		reader := NewClipboardReader(mockClipboard{})
 		if reader == nil {
 			t.Fatal("Expected non-nil ClipboardReader")
 		}
 	})
 
 	t.Run("read returns error or valid result", func(t *testing.T) {
-		reader := NewClipboardReader(clipboard.New())
+		reader := NewClipboardReader(mockClipboard{})
 		result, err := reader.Read()
 
 		if err != nil {

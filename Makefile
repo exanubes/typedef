@@ -1,4 +1,4 @@
-.PHONY: start-web build-wasm build-cli build-linux build-macos build-wasm
+.PHONY: start-web build-wasm build-cli build-linux build-macos build-wasm build-web build-web-ci
 
 build-wasm-dev:
 	CGO_ENDABLED=0 GOOS=js GOARCH=wasm go build -C ./cmd/wasm -o ../../web/src/js/rpc/main.wasm
@@ -19,3 +19,4 @@ build-macos:
 
 build-wasm:
 	CGO_ENDABLED=0 GOOS=js GOARCH=wasm go build -o dist/wasm/main.wasm ./cmd/wasm
+

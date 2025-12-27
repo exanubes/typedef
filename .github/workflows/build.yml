@@ -18,7 +18,7 @@ jobs:
   build-linux:
     name: Build CLI (Linux)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5 
 
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
   build-macos:
     name: Build CLI (macOS)
     runs-on: macos-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
@@ -121,3 +121,4 @@ jobs:
         with:
           name: wasm
           path: dist/wasm/main.wasm
+          retention-days: 7

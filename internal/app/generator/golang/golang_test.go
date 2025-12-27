@@ -1,3 +1,5 @@
+//go:build !integration
+
 package golang_test
 
 import (

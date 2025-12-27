@@ -1,0 +1,75 @@
+name: Build Web Application
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version for web build'
+        required: false
+        type: string
+        default: '22'
+      pnpm-version:
+        description: 'pnpm version'
+        required: false
+        type: string
+        default: '10.11.0'
+      upload-artifacts:
+        description: 'Upload build artifacts (true for releases, false for CI)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-web:
+    name: Build Web Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 5 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm
+          path: dist/wasm/
+
+      - name: Copy WASM to web source
+        run: |
+          cp dist/wasm/main.wasm web/src/js/rpc/main.wasm
+          ls -lh web/src/js/rpc/main.wasm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web application
+        working-directory: web
+        run: pnpm run build:prod
+
+      - name: Upload web artifacts
+        if: ${{ inputs.upload-artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: dist/web/*
+          retention-days: 7

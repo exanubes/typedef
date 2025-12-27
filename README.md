@@ -24,9 +24,9 @@ go build -o typedef main.go
 
 # Output (copied to clipboard by default):
 # type Root struct {
-#     Active bool   `json:"active"`
-#     Age    int    `json:"age"`
-#     Name   string `json:"name"`
+#     Active bool   
+#     Age    int    
+#     Name   string 
 # }
 ```
 
@@ -187,7 +187,7 @@ which xclip
 
 ### Automatic Fallback
 
-If clipboard tools aren't detected, typedef will automatically fall back to stdout output without errors:
+If supported clipboard tools aren't detected, typedef will automatically fall back to stdout output without errors:
 
 ```
 INFO: required dependencies for clipboard not detected. Falling back to cli target
