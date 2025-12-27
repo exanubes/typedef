@@ -4,19 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"golang.design/x/clipboard"
+	"github.com/exanubes/typedef/internal/domain"
 )
 
-type ClipboardReader struct{}
+type ClipboardReader struct {
+	clipboard domain.Clipboard
+}
 
-func NewClipboardReader() *ClipboardReader {
-	return &ClipboardReader{}
+func NewClipboardReader(clipboard domain.Clipboard) *ClipboardReader {
+	return &ClipboardReader{
+		clipboard: clipboard,
+	}
 }
 
 func (reader *ClipboardReader) Read() (string, error) {
-	clipboard_data := clipboard.Read(clipboard.FmtText)
+	clipboard_data, err := reader.clipboard.Read()
 
-	if json.Valid(clipboard_data) {
+	if err != nil {
+		return "", err
+	}
+
+	if json.Valid([]byte(clipboard_data)) {
 		return string(clipboard_data), nil
 	}
 

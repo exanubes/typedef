@@ -7,21 +7,21 @@ import (
 	"os/signal"
 
 	"github.com/exanubes/typedef/internal/drivers/cli"
-	"golang.design/x/clipboard"
+)
+
+// Build-time variables (injected via -ldflags)
+var (
+	Version   = "dev"
+	CommitSHA = "unknown"
+	BuildTime = "unknown"
 )
 
 func main() {
 	args := os.Args[1:]
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-	err := clipboard.Init()
 
-	if err != nil {
-		fmt.Println("Clipboard error: ", err.Error())
-		fmt.Println("Clipboard input will not be supported")
-	}
-
-	err = cli.Start(ctx, args)
+	err := cli.Start(ctx, args)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

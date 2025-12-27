@@ -10,6 +10,13 @@ import (
 	"github.com/exanubes/typedef/internal/rpc"
 )
 
+// Build-time variables (injected via -ldflags)
+var (
+	Version   = "dev"
+	CommitSHA = "unknown"
+	BuildTime = "unknown"
+)
+
 var FALLBACK_ERROR_RESPONSE = `{"jsonrpc": "2.0","error":{"code": -32603, "message": "Internal error"}, "id": null}`
 var inbox = make(chan js.Value, 64)
 

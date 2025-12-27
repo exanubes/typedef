@@ -7,11 +7,14 @@ import (
 
 	"github.com/exanubes/typedef/internal/app/configurator"
 	"github.com/exanubes/typedef/internal/domain"
+	"github.com/exanubes/typedef/internal/infrastructure/clipboard"
 	"github.com/exanubes/typedef/internal/infrastructure/readers"
 	"github.com/exanubes/typedef/internal/infrastructure/targets"
 	"github.com/exanubes/typedef/internal/services"
 	"github.com/exanubes/typedef/internal/usecase"
 )
+
+var default_target = "cli"
 
 func Start(ctx context.Context, args []string) error {
 	cmd := flag.NewFlagSet("root", flag.ExitOnError)
@@ -19,14 +22,21 @@ func Start(ctx context.Context, args []string) error {
 	target_flag := cmd.String("target", "clipboard", "delivery target for ouput e.g., cli, clipboard")
 	output_path_flag := cmd.String("output-path", "", "path of the file where output should be saved")
 	format_flag := cmd.String("format", "", "desired format for the output e.g., go, ts, ts-zod")
-	cmd.Parse(args)
 
-	output_service := services.NewOutputService(targets.TargetFactory{})
+	cmd.Parse(args)
+	clipboard_adapter := clipboard.New()
+
+	if clipboard_adapter == nil {
+		target_flag = &default_target
+		fmt.Print("\nINFO: required dependencies for clipboard not detected. Falling back to cli target\n\n")
+	}
+
+	output_service := services.NewOutputService(targets.TargetFactory{}, clipboard_adapter)
 
 	input_reader := readers.NewChainReader(
 		readers.NewFlagReader(*input_flag),
 		readers.NewStdinReader(),
-		readers.NewClipboardReader(),
+		readers.NewClipboardReader(clipboard_adapter),
 	)
 
 	input_data, err := input_reader.Read()

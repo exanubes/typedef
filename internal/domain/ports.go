@@ -23,3 +23,8 @@ type OutputOptions struct {
 	Target string
 	Path   string
 }
+
+type Clipboard interface {
+	Read() (string, error)
+	Write(input string) error
+}

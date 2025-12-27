@@ -3,7 +3,8 @@ package targets
 import "github.com/exanubes/typedef/internal/domain"
 
 type FactoryOptions struct {
-	Filepath string
+	Filepath  string
+	Clipboard domain.Clipboard
 }
 
 type TargetFactory struct{}
@@ -15,7 +16,7 @@ func (factory TargetFactory) Create(t string, options FactoryOptions) domain.Out
 	case "file":
 		return NewFileTarget(options.Filepath)
 	case "clipboard":
-		return NewClipboardTarget()
+		return NewClipboardTarget(options.Clipboard)
 	}
 	return nil
 }

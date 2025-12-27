@@ -6,15 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"golang.design/x/clipboard"
+	"github.com/exanubes/typedef/internal/infrastructure/clipboard"
 )
 
-// TestClipboardReader_Integration tests ClipboardReader with real clipboard access.
-//
-// This uses a hybrid approach:
-// 1. Initialize clipboard with clipboard.Init()
-// 2. If init fails (headless/CI/CD environment), skip test gracefully
-// 3. If init succeeds, write test data to clipboard
+// This test:
+// 1. Creates a clipboard instance using clipboard.New()
+// 2. If clipboard is unavailable (headless/CI/CD environment), skip test gracefully
+// 3. Write test data to clipboard
 // 4. Read with ClipboardReader and validate result
 //
 // The 10ms delay after clipboard.Write() ensures the clipboard is updated before reading.
@@ -67,23 +65,23 @@ func TestClipboardReader_Integration(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Initialize clipboard - skip if unavailable
-			if err := initClipboard(t); err != nil {
-				t.Skipf("Clipboard unavailable: %v (this is expected in CI/CD environments)", err)
+			cb := clipboard.New()
+			if cb == nil {
+				t.Skip("Clipboard unavailable (this is expected in CI/CD environments)")
 				return
 			}
 
-			// Write test data to clipboard
-			clipboard.Write(clipboard.FmtText, []byte(tc.input))
+			if err := cb.Write(tc.input); err != nil {
+				t.Skipf("Failed to write to clipboard: %v", err)
+				return
+			}
 
-			// Small delay to ensure clipboard is updated
+			// NOTE: Small delay to ensure clipboard is updated
 			time.Sleep(10 * time.Millisecond)
 
-			// Read with ClipboardReader
-			reader := NewClipboardReader()
+			reader := NewClipboardReader(cb)
 			result, err := reader.Read()
 
-			// Validate result
 			if tc.wantErr {
 				if err == nil {
 					t.Fatal("Expected error, got nil")
@@ -103,18 +101,4 @@ func TestClipboardReader_Integration(t *testing.T) {
 			}
 		})
 	}
-}
-
-// initClipboard initializes the clipboard and returns an error if it fails.
-// This helper allows tests to gracefully skip when clipboard is unavailable.
-func initClipboard(t *testing.T) error {
-	// clipboard.Init() may panic in some environments, so we recover
-	defer func() {
-		if r := recover(); r != nil {
-			t.Skipf("Clipboard initialization panicked: %v", r)
-		}
-	}()
-
-	err := clipboard.Init()
-	return err
 }

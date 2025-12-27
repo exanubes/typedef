@@ -3,18 +3,21 @@ package targets
 import (
 	"fmt"
 
-	"golang.design/x/clipboard"
+	"github.com/exanubes/typedef/internal/domain"
 )
 
 type ClipboardTarget struct {
+	clipboard domain.Clipboard
 }
 
-func NewClipboardTarget() *ClipboardTarget {
-	return &ClipboardTarget{}
+func NewClipboardTarget(clipboard domain.Clipboard) *ClipboardTarget {
+	return &ClipboardTarget{clipboard: clipboard}
 }
 
 func (target *ClipboardTarget) Send(code string) error {
-	clipboard.Write(clipboard.FmtText, []byte(code))
+	if err := target.clipboard.Write(code); err != nil {
+		return err
+	}
 	fmt.Println("\nOutput saved to clipboard")
 	return nil
 }

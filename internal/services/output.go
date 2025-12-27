@@ -8,15 +8,16 @@ import (
 )
 
 type OutputService struct {
-	outputs targets.Factory
+	outputs   targets.Factory
+	clipboard domain.Clipboard
 }
 
-func NewOutputService(factory targets.Factory) *OutputService {
-	return &OutputService{outputs: factory}
+func NewOutputService(factory targets.Factory, clipboard domain.Clipboard) *OutputService {
+	return &OutputService{outputs: factory, clipboard: clipboard}
 }
 
 func (service *OutputService) Send(payload string, options domain.OutputOptions) error {
-	target := service.outputs.Create(options.Target, targets.FactoryOptions{Filepath: options.Path})
+	target := service.outputs.Create(options.Target, targets.FactoryOptions{Filepath: options.Path, Clipboard: service.clipboard})
 
 	if target == nil {
 		return fmt.Errorf("Target '%s' is not supported", options.Target)
