@@ -2,6 +2,7 @@ package graph
 
 import (
 	"log"
+	"sort"
 
 	"golang.org/x/exp/maps"
 
@@ -77,6 +78,10 @@ func (graph *Graph) parse_value(property string, node ast.Node) domain.Type {
 
 		types := maps.Values(types_map)
 		if len(types) > 1 {
+			// Sort types deterministically by their canonical representation
+			sort.Slice(types, func(i, j int) bool {
+				return types[i].Canonical() < types[j].Canonical()
+			})
 			result = &domain.ArrayType{Element: &domain.UnionType{OneOf: types}}
 		} else {
 			result = &domain.ArrayType{Element: types[0]}

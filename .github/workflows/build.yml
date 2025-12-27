@@ -116,7 +116,6 @@ jobs:
       - run: make build-wasm
 
       - name: Upload WASM artifact
-        if: ${{ inputs.build-all-platforms }}
         uses: actions/upload-artifact@v4
         with:
           name: wasm
