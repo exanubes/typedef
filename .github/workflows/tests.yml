@@ -82,7 +82,7 @@ jobs:
     name: Web Tests (Node.js ${{ inputs.node-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: hashFiles('web/**/*.test.js', 'web/**/*.test.ts') != ''
+    if: ${{ hashFiles('web/**/*.test.js', 'web/**/*.test.ts') != '' }}
 
     steps:
       - name: Checkout code

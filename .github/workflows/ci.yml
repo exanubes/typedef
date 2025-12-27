@@ -12,3 +12,10 @@ jobs:
     with:
       go-version: '1.24.4'
       node-version: '22'
+
+  # Verify builds work (quick check, current platform only)
+  build-verify:
+    uses: ./.github/workflows/build.yml
+    with:
+      go-version: '1.24.4'
+      build-all-platforms: false

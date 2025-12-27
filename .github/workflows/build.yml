@@ -1,0 +1,123 @@
+name: Build Binaries
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: 'Go version for builds'
+        required: false
+        type: string
+        default: '1.24.4'
+      build-all-platforms:
+        description: 'Build all platforms (true) or verify only (false)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-linux:
+    name: Build CLI (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - run: go mod download
+
+      - name: Build Linux binaries
+        if: ${{ inputs.build-all-platforms }}
+        run: make build-linux
+
+      - name: Verify build (Linux only)
+        if: ${{ !inputs.build-all-platforms }}
+        run: make build-cli
+
+      - name: Upload Linux artifacts
+        if: ${{ inputs.build-all-platforms }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-linux
+          path: dist/cli/linux/*
+          retention-days: 7
+
+  build-macos:
+    name: Build CLI (macOS)
+    runs-on: macos-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - run: go mod download
+
+      - name: Build macOS binaries
+        if: ${{ inputs.build-all-platforms }}
+        run: make build-macos
+
+      - name: Verify build (macOS only)
+        if: ${{ !inputs.build-all-platforms }}
+        run: make build-cli
+
+      - name: Upload macOS artifacts
+        if: ${{ inputs.build-all-platforms }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-macos
+          path: dist/cli/darwin/*
+          retention-days: 7
+
+  build-wasm:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - run: go mod download
+      - run: make build-wasm
+
+      - name: Upload WASM artifact
+        if: ${{ inputs.build-all-platforms }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm
+          path: dist/wasm/main.wasm
