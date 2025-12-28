@@ -1,3 +1,7 @@
+ [![CI](https://github.com/exanubes/typedef/actions/workflows/ci.yml/badge.svg)](https://github.com/exanubes/typedef/actions/workflows/ci.yml)
+ [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/exanubes/typedef/blob/master/LICENSE)
+ [![Latest Release](https://img.shields.io/github/v/release/exanubes/typedef)](https://github.com/exanubes/typedef/releases)
+
 # typedef
 
 Convert JSON to type definitions in multiple programming languages.

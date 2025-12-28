@@ -9,13 +9,14 @@
     "targets": {
         "prod": {
             "distDir": "../dist/web/",
+            "publicUrl": ".",
             "optimize": true
         }
     },
     "scripts": {
         "start": "parcel",
         "build": "parcel build",
-        "build:prod": "parcel build --target prod",
+        "build:prod": "parcel build --target prod && cp .nojekyll ../dist/web/.nojekyll",
         "lint": "eslint src/**/*.{js,html} && stylelint src/**/*.css",
         "lint:fix": "eslint src/**/*.{js,html} --fix && stylelint src/**/*.css --fix",
         "format": "prettier --write \"src/**/*.{js,css,html}\"",

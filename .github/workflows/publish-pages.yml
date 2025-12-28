@@ -1,0 +1,51 @@
+name: Publish to GitHub Pages
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: 'Name of the web artifact to download'
+        required: false
+        type: string
+        default: 'web'
+
+jobs:
+  publish-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    # Required permissions for pushing to gh-pages branch
+    permissions:
+      contents: write
+
+    # Prevent concurrent deployments
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
+      - name: Download web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ./gh-pages-content
+
+      - name: Verify artifact contents
+        run: |
+          echo "Artifact contents:"
+          ls -lah ./gh-pages-content/
+          if [ ! -f "./gh-pages-content/index.html" ]; then
+            echo "Error: index.html not found in artifact"
+            exit 1
+          fi
+          echo "✓ Artifact verification passed"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages-content
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: 'Deploy ${{ github.sha }} to GitHub Pages'

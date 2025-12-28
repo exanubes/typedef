@@ -1,6 +1,16 @@
 dist/
-.terraform
-.terraform.lock.hcl
-terraform.tfvars
+**/dist/
 
-backend-local.hcl
+ # Environment files
+ .env
+ .env.local
+ .env.*.local
+
+ # IDE configuration
+ .vscode/
+ .idea/
+ *.sublime-*
+
+ # OS files
+ .DS_Store
+ Thumbs.db
