@@ -7,6 +7,9 @@
     "description": "",
     "source": "src/index.html",
     "targets": {
+        "dev": {
+            "distDir": "./dist"
+        },
         "prod": {
             "distDir": "../dist/web/",
             "publicUrl": ".",
@@ -15,7 +18,7 @@
     },
     "scripts": {
         "start": "parcel",
-        "build": "parcel build",
+        "build": "parcel build --target dev",
         "build:prod": "parcel build --target prod && cp .nojekyll ../dist/web/.nojekyll",
         "lint": "eslint src/**/*.{js,html} && stylelint src/**/*.css",
         "lint:fix": "eslint src/**/*.{js,html} --fix && stylelint src/**/*.css --fix",

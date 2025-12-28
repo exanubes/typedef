@@ -1,6 +1,9 @@
  [![CI](https://github.com/exanubes/typedef/actions/workflows/ci.yml/badge.svg)](https://github.com/exanubes/typedef/actions/workflows/ci.yml)
+ [![Release](https://github.com/exanubes/typedef/actions/workflows/release.yml/badge.svg)](https://github.com/exanubes/typedef/actions/workflows/release.yml)
  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/exanubes/typedef/blob/master/LICENSE)
  [![Latest Release](https://img.shields.io/github/v/release/exanubes/typedef)](https://github.com/exanubes/typedef/releases)
+ [![Go Report Card](https://goreportcard.com/badge/github.com/exanubes/typedef)](https://goreportcard.com/report/github.com/exanubes/typedef)
+ [![Go Version](https://img.shields.io/github/go-mod/go-version/exanubes/typedef)](https://github.com/exanubes/typedef)                                │
 
 # typedef
 
@@ -127,12 +130,12 @@ Control where generated types are sent using the `--target` flag:
 
 ### Command Flags Reference
 
-| Flag | Shorthand | Description | Default |
-|------|-----------|-------------|---------|
-| `--format` | `-f` | Output format (go/typescript/zod/jsdoc) | Required |
-| `--input` | `-i` | JSON input string | Uses stdin or clipboard |
-| `--target` | `-t` | Output target (clipboard/cli/file) | `clipboard` |
-| `--output-path` | `-o` | File path when using `--target file` | `./typedef.txt` |
+| Flag  | Description | Default |
+|------|-------------|---------|
+| `--format` | Output format (go/typescript/zod/jsdoc) | Required |
+| `--input`  | JSON input string | Uses stdin or clipboard |
+| `--target`  | Output target (clipboard/cli/file) | `clipboard` |
+| `--output-path` | File path when using `--target file` | `./typedef.txt` |
 
 ## Clipboard Support Setup
 
