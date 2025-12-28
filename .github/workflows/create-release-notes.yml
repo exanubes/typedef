@@ -1,0 +1,72 @@
+name: Create Release Notes
+
+on:
+  workflow_call:
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for changelog
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-linux
+          path: ./artifacts/linux
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-macos
+          path: ./artifacts/darwin
+
+      - name: Prepare release assets
+        run: |
+          # Create release directory
+          mkdir -p release
+
+          # Rename and make binaries executable
+          cp ./artifacts/linux/amd64/cli release/typedef-linux-amd64
+          cp ./artifacts/linux/arm64/cli release/typedef-linux-arm64
+          cp ./artifacts/darwin/amd64/cli release/typedef-darwin-amd64
+          cp ./artifacts/darwin/arm64/cli release/typedef-darwin-arm64
+
+          chmod +x release/typedef-*
+
+          # Generate checksums
+          cd release
+          sha256sum typedef-* > checksums.txt
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag (fallback to first commit if no previous tag)
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
+
+          # Generate changelog
+          CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %h %s" --no-decorate)
+
+          # Save to output
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title "${{ github.ref_name }}" \
+            --notes "${{ steps.changelog.outputs.changelog }}" \
+            release/typedef-* \
+            release/checksums.txt

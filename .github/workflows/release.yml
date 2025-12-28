@@ -33,3 +33,9 @@ jobs:
     uses: ./.github/workflows/publish-pages.yml
     permissions:
       contents: write
+
+  create-release:
+    needs: publish-pages
+    uses: ./.github/workflows/create-release-notes.yml
+    permissions:
+      contents: write
