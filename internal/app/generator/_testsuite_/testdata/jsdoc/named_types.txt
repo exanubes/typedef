@@ -7,7 +7,7 @@
 
 /**
  * @typedef  { Object } Root
- * @property { number } id
+ * @property { string } id
  * @property { User } author
  * @property { boolean } cool
  * @property { Date } created_at

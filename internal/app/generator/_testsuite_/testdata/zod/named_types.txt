@@ -8,7 +8,7 @@ const UserSchema = z.object({
 type User = z.infer<typeof UserSchema>;
 
 const RootSchema = z.object({
-  id: z.number(),
+  id: z.uuid(),
   author: UserSchema,
   cool: z.boolean(),
   created_at: z.date(),

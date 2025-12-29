@@ -105,6 +105,10 @@ func (generator *JSDocCodegen) dfs(node domain.Type, visited map[string]string, 
 	case *domain.BooleanType, domain.BooleanType:
 		visited[id] = "boolean"
 		return "boolean"
+	case *domain.UuidType, domain.UuidType:
+		visited[id] = "string"
+		// TODO: make configurable to use external type e.g., @types/uuid
+		return "string"
 	default:
 		return fmt.Sprintf("Unhandled type '%s'", node.Canonical())
 	}

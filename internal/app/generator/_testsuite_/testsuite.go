@@ -18,7 +18,7 @@ import (
 func CodegenTestSuite(test *testing.T, name string, codegen generator.CodeGenerator) {
 	test.Run(name, func(test *testing.T) {
 		input := `{
-	"id": 1,
+	"id": "4a9fe0e5-93c3-4f08-a1d0-162f06b2edb3",
 	"title": "Harry Potter",
 	"user":{"id": 1,
 	"name": "John",

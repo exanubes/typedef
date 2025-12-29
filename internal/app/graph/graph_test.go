@@ -47,9 +47,10 @@ func TestCanonicalSerialization(test *testing.T) {
 	"simple": [1,2,3],
 	"mixed": [69.420, 69, 420, "hello", "there", true, false],
 	"date": "2025-12-29",
-	"datetime": "2025-12-29 14:01:12"
+	"datetime": "2025-12-29 14:01:12",
+	"uuid": "4a9fe0e5-93c3-4f08-a1d0-162f06b2edb3"
 	}`
-	expected := "object{bool:boolean,date:date,datetime:date,float:float,int:int,mixed:array<union<boolean|float|int|string>>,simple:array<int>,varchar:string}"
+	expected := "object{bool:boolean,date:date,datetime:date,float:float,int:int,mixed:array<union<boolean|float|int|string>>,simple:array<int>,uuid:uuid,varchar:string}"
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 

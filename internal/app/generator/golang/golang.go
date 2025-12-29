@@ -24,6 +24,7 @@ func (generator *GolangCodegen) Generate(root domain.Type) string {
 	generator.id_provider.Reset()
 	return generator.dfs(root, visited, code)
 }
+
 func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string, code *strings.Builder) string {
 	id := node.Canonical()
 	if val, ok := visited[id]; ok {
@@ -100,6 +101,10 @@ func (generator *GolangCodegen) dfs(node domain.Type, visited map[string]string,
 	case *domain.DateType, domain.DateType:
 		visited[id] = "time.Time"
 		return "time.Time"
+	case *domain.UuidType, domain.UuidType:
+		visited[id] = "string"
+		// TODO: make configurable to use external type e.g., github.com/google/uuid
+		return "string"
 	default:
 		visited[id] = node.Canonical()
 		return node.Canonical()

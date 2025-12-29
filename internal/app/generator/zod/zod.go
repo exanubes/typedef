@@ -102,6 +102,9 @@ func (generator *ZodCodegen) dfs(node domain.Type, visited map[string]string, co
 	case *domain.BooleanType, domain.BooleanType:
 		visited[id] = "z.boolean()"
 		return "z.boolean()"
+	case *domain.UuidType, domain.UuidType:
+		visited[id] = "z.uuid()"
+		return "z.uuid()"
 	default:
 		return fmt.Sprintf("Unhandled type '%s'", node.Canonical())
 	}

@@ -1,6 +1,9 @@
 package graph
 
-import "time"
+import (
+	"regexp"
+	"time"
+)
 
 func is_date_string(input string) bool {
 	if input == "" {
@@ -21,4 +24,10 @@ func is_date_string(input string) bool {
 	}
 
 	return false
+}
+
+var uuid_regexe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+
+func is_uuid_string(input string) bool {
+	return uuid_regexe.MatchString(input)
 }

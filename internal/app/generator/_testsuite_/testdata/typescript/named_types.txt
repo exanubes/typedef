@@ -5,7 +5,7 @@ type User = {
 }
 
 type Root = {
-  id: number;
+  id: string;
   author: User;
   cool: boolean;
   created_at: Date;

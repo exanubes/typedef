@@ -80,6 +80,11 @@ type DateType struct{}
 func (t DateType) Name() string      { return "date" }
 func (t DateType) Canonical() string { return "date" }
 
+type UuidType struct{}
+
+func (t UuidType) Name() string      { return "uuid" }
+func (t UuidType) Canonical() string { return "uuid" }
+
 type NamedType struct {
 	Namespace string
 	Identity  *ObjectType

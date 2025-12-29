@@ -13,7 +13,7 @@ type UnionType_1 struct {
 }
 
 type Root struct {
-  ID int
+  ID string
   Author User
   Cool bool
   Created_at time.Time

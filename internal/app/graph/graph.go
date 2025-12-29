@@ -44,6 +44,10 @@ func (graph *Graph) parse_string(node *ast.StringNode) domain.Type {
 		return domain.DateType{}
 	}
 
+	if is_uuid_string(node.Value) {
+		return domain.UuidType{}
+	}
+
 	return domain.StringType{}
 }
 

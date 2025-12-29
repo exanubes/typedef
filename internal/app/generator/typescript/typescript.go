@@ -99,6 +99,10 @@ func (generator *TypescriptCodegen) dfs(node domain.Type, visited map[string]str
 	case *domain.DateType, domain.DateType:
 		visited[id] = "Date"
 		return "Date"
+	case *domain.UuidType, domain.UuidType:
+		visited[id] = "string"
+		// TODO: make configurable to use external type e.g., @types/uuid
+		return "string"
 	default:
 		visited[id] = node.Canonical()
 		return node.Canonical()
