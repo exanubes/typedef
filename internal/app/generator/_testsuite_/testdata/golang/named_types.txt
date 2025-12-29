@@ -1,5 +1,6 @@
 type User struct {
   ID int
+  CreatedAt time.Time
   Name string
 }
 
@@ -7,13 +8,15 @@ type UnionType_1 struct {
   A bool
   B int
   C string
-  D User
+  D time.Time
+  E User
 }
 
 type Root struct {
   ID int
   Author User
   Cool bool
+  Created_at time.Time
   Float float64
   Mixed []UnionType_1
   Numbers []int

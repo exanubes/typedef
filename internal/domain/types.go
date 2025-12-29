@@ -78,7 +78,7 @@ func (t NullType) Canonical() string { return "null" }
 type DateType struct{}
 
 func (t DateType) Name() string      { return "date" }
-func (t DateType) Canonical() string { return "" }
+func (t DateType) Canonical() string { return "date" }
 
 type NamedType struct {
 	Namespace string

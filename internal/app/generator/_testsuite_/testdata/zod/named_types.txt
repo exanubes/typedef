@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const UserSchema = z.object({
   id: z.number(),
+  createdAt: z.date(),
   name: z.string(),
 });
 type User = z.infer<typeof UserSchema>;
@@ -10,8 +11,9 @@ const RootSchema = z.object({
   id: z.number(),
   author: UserSchema,
   cool: z.boolean(),
+  created_at: z.date(),
   float: z.number(),
-  mixed: z.array(z.union([UserSchema, z.boolean(), z.number(), z.string()])),
+  mixed: z.array(z.union([UserSchema, z.boolean(), z.date(), z.number(), z.string()])),
   numbers: z.array(z.number()),
   title: z.string(),
   user: UserSchema,

@@ -39,12 +39,19 @@ func (graph *Graph) parse_object(node *ast.ObjectNode) *domain.ObjectType {
 	return &result
 }
 
+func (graph *Graph) parse_string(node *ast.StringNode) domain.Type {
+	if is_date_string(node.Value) {
+		return domain.DateType{}
+	}
+
+	return domain.StringType{}
+}
+
 func (graph *Graph) parse_value(property string, node ast.Node) domain.Type {
 	var result domain.Type
 	switch node := node.(type) {
 	case *ast.StringNode:
-		// TODO: date type
-		result = domain.StringType{}
+		result = graph.parse_string(node)
 	case *ast.NumberNode:
 		switch node.Kind {
 		case ast.INTEGER:

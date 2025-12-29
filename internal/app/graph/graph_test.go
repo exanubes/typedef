@@ -45,9 +45,11 @@ func TestCanonicalSerialization(test *testing.T) {
 	"float": 69.420,
 	"varchar": "hello world",
 	"simple": [1,2,3],
-	"mixed": [69.420, 69, 420, "hello", "there", true, false]
+	"mixed": [69.420, 69, 420, "hello", "there", true, false],
+	"date": "2025-12-29",
+	"datetime": "2025-12-29 14:01:12"
 	}`
-	expected := "object{bool:boolean,float:float,int:int,mixed:array<union<boolean|float|int|string>>,simple:array<int>,varchar:string}"
+	expected := "object{bool:boolean,date:date,datetime:date,float:float,int:int,mixed:array<union<boolean|float|int|string>>,simple:array<int>,varchar:string}"
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
@@ -57,7 +59,7 @@ func TestCanonicalSerialization(test *testing.T) {
 	graph := engine.Generate(program)
 
 	if result := graph.Canonical(); result != expected {
-		test.Fatalf("Expected %s, received: %s", expected, result)
+		test.Fatalf("Expected %s,\n Received: %s\n", expected, result)
 	}
 }
 

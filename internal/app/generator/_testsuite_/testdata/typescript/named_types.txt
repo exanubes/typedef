@@ -1,5 +1,6 @@
 type User = {
   id: number;
+  createdAt: Date;
   name: string;
 }
 
@@ -7,8 +8,9 @@ type Root = {
   id: number;
   author: User;
   cool: boolean;
+  created_at: Date;
   float: number;
-  mixed: (User | boolean | number | string)[];
+  mixed: (Date | User | boolean | number | string)[];
   numbers: number[];
   title: string;
   user: User;

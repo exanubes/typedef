@@ -21,16 +21,19 @@ func CodegenTestSuite(test *testing.T, name string, codegen generator.CodeGenera
 	"id": 1,
 	"title": "Harry Potter",
 	"user":{"id": 1,
-	"name": "John"
+	"name": "John",
+	"createdAt": "2025-12-29 14:07:00"
 	},
 	"author": {
 	"id": 2,
-	"name": "Tom"
+	"name": "Tom",
+	"createdAt": "2025-12-29 14:08:00"
 	},
 	"numbers": [1,2,3],
-	"mixed": [1, "2", false, {"id": 3, "name": "Simon"}],
+	"mixed": [1, "2", false, {"id": 3, "name": "Simon","createdAt": "2025-12-29 14:08:00"}, "2025-12-29", "2025-12-29 14:08:30.123"],
 	"float": 69.420,
-	"cool": true
+	"cool": true,
+	"created_at": "2025-12-29"
 	}
 	`
 

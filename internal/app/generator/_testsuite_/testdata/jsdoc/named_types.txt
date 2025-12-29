@@ -1,6 +1,7 @@
 /**
  * @typedef  { Object } User
  * @property { number } id
+ * @property { Date } createdAt
  * @property { string } name
  */
 
@@ -9,8 +10,9 @@
  * @property { number } id
  * @property { User } author
  * @property { boolean } cool
+ * @property { Date } created_at
  * @property { number } float
- * @property { (User | boolean | number | string)[] } mixed
+ * @property { (Date | User | boolean | number | string)[] } mixed
  * @property { number[] } numbers
  * @property { string } title
  * @property { User } user
