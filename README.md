@@ -3,7 +3,7 @@
  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/exanubes/typedef/blob/master/LICENSE)
  [![Latest Release](https://img.shields.io/github/v/release/exanubes/typedef)](https://github.com/exanubes/typedef/releases)
  [![Go Report Card](https://goreportcard.com/badge/github.com/exanubes/typedef)](https://goreportcard.com/report/github.com/exanubes/typedef)
- [![Go Version](https://img.shields.io/github/go-mod/go-version/exanubes/typedef)](https://github.com/exanubes/typedef)                                │
+ [![Go Version](https://img.shields.io/github/go-mod/go-version/exanubes/typedef)](https://github.com/exanubes/typedef)
 
 # typedef
 

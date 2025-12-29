@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/exanubes/typedef/internal/utils"
-	"golang.org/x/exp/maps"
+	"github.com/exanubes/typedef/internal/utils/maps"
 )
 
 type schema_builder struct {

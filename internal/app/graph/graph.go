@@ -4,11 +4,10 @@ import (
 	"log"
 	"sort"
 
-	"golang.org/x/exp/maps"
-
 	"github.com/exanubes/typedef/internal/app/ast"
 	"github.com/exanubes/typedef/internal/app/dedup"
 	"github.com/exanubes/typedef/internal/domain"
+	"github.com/exanubes/typedef/internal/utils/maps"
 )
 
 type Graph struct {

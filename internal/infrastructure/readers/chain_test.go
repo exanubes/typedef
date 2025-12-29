@@ -73,10 +73,10 @@ func TestChainReader_Read(t *testing.T) {
 			errMsg:  "No input provided",
 		},
 		{
-			name:     "returns error for empty reader chain",
-			readers:  []domain.InputReader{},
-			wantErr:  true,
-			errMsg:   "No input provided",
+			name:    "returns error for empty reader chain",
+			readers: []domain.InputReader{},
+			wantErr: true,
+			errMsg:  "No input provided",
 		},
 		{
 			name: "handles single reader success",

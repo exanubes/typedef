@@ -19,7 +19,7 @@ var default_target = "cli"
 func Start(ctx context.Context, args []string) error {
 	cmd := flag.NewFlagSet("root", flag.ExitOnError)
 	input_flag := cmd.String("input", "", "object structure that should be turned into a type definition or schema")
-	target_flag := cmd.String("target", "clipboard", "delivery target for ouput e.g., cli, clipboard")
+	target_flag := cmd.String("target", "clipboard", "delivery target for output e.g., cli, clipboard")
 	output_path_flag := cmd.String("output-path", "", "path of the file where output should be saved")
 	format_flag := cmd.String("format", "", "desired format for the output e.g., go, ts, ts-zod")
 
