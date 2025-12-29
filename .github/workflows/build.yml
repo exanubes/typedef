@@ -52,7 +52,7 @@ jobs:
         with:
           name: cli-linux
           path: dist/cli/linux/*
-          retention-days: 7
+          retention-days: 1
 
   build-macos:
     name: Build CLI (macOS)
@@ -91,7 +91,7 @@ jobs:
         with:
           name: cli-macos
           path: dist/cli/darwin/*
-          retention-days: 7
+          retention-days: 1
 
   build-wasm:
     name: Build WASM
@@ -120,4 +120,4 @@ jobs:
         with:
           name: wasm
           path: dist/wasm/main.wasm
-          retention-days: 7
+          retention-days: 1
