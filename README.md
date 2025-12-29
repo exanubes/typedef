@@ -11,6 +11,18 @@ Convert JSON to type definitions in multiple programming languages.
 
 `typedef` is a code generator that analyzes JSON input and produces strongly-typed definitions for your target language. Whether you're working with API responses, configuration files, or any JSON data, typedef helps you quickly generate type-safe code.
 
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Clipboard Support Setup](#clipboard-support-setup)
+- [Examples](#examples)
+- [Troubleshooting](#troubleshooting)
+- [Web Interface](#web-interface)
+- [License](#license)
+
 ## Features
 
 - **Multiple Output Formats**: Generate Go structs, TypeScript interfaces, Zod schemas, or JSDoc typedefs
@@ -65,16 +77,13 @@ git clone https://github.com/exanubes/typedef.git
 cd typedef
 
 # Build the CLI tool
-go build -o typedef main.go
-
-# Or use the Makefile
-make build-cli
+go build -o typedef ./cmd/cli/main.go
 ```
 
 **Verify the build:**
 
 ```bash
-./typedef --format go --input '{"test": 1}'
+./typedef --format go --input '{"test": 1}' --target cli
 ```
 
 ## Usage
