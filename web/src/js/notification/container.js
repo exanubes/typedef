@@ -24,9 +24,16 @@ export function create_notification_container() {
             toast.classList.add('toast--visible');
             notifications.add(notification);
         },
+        remove(notification) {
+            if (notifications.has(notification)) {
+                notification.close();
+                notifications.delete(notification);
+            }
+        },
         clear() {
             for (const notification of notifications) {
                 notification.close();
+                notifications.delete(notification);
             }
         },
     });
@@ -53,5 +60,6 @@ const get_container = (id) => {
 /**
  * @typedef {object} NotificationContainer
  * @property {(notification: import("./notification").Notification)=>void} add
+ * @property {(notification: import("./notification").Notification)=>void} remove
  * @property {()=>void} clear
  * */

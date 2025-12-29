@@ -18,6 +18,10 @@ export function create_notification_service(notification_container) {
         }
 
         notification_container.add(notification);
+
+        setTimeout(() => {
+            notification_container.remove(notification);
+        }, 10_000);
     };
 
     /** @type {NotificationService["show_error"]} */
@@ -31,6 +35,10 @@ export function create_notification_service(notification_container) {
         }
 
         notification_container.add(notification);
+
+        setTimeout(() => {
+            notification_container.remove(notification);
+        }, 10_000);
     };
 
     return {
