@@ -1,9 +1,0 @@
-# Build outputs
-dist/
-.parcel-cache/
-
-# Dependencies
-node_modules/
-
-# Lock files
-*.lock

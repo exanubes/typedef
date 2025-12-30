@@ -37,8 +37,8 @@ jobs:
 
       - name: Copy WASM to web source
         run: |
-          cp dist/wasm/main.wasm web/src/js/rpc/main.wasm
-          ls -lh web/src/js/rpc/main.wasm
+          cp dist/wasm/main.wasm client/web/src/js/rpc/main.wasm
+          ls -lh client/web/src/js/rpc/main.wasm
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -54,16 +54,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('web/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('client/web/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        working-directory: web
+        working-directory: client/web
         run: pnpm install --frozen-lockfile
 
       - name: Build web application
-        working-directory: web
+        working-directory: client/web
         run: pnpm run build:prod
 
       - name: Upload web artifacts
