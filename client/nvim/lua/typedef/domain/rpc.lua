@@ -9,9 +9,5 @@
 ---@class Server
 ---@field start fun(self: Server)
 
----@class RequestValidator
----@field validate fun(message: table): boolean
----
-
 ---@class RpcClient
 ---@field send fun(self: Server, method: string, payload: table): Promise
