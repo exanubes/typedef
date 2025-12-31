@@ -18,7 +18,14 @@ function M.register(server)
         local input_reader = ChainReader.new({ SelectionReader.new(opts.range > 0), YankReader.new() })
         local codegen_repository = Codegen.new(server)
         local input = input_reader:read()
-        codegen_repository:generate(input, "json", format)
+        local response = codegen_repository:generate(input, "json", format)
+        response
+            :on_success(function(data)
+                vim.notify(vim.inspect(data))
+            end)
+            :on_error(function(err)
+                vim.notify(vim.inspect(err))
+            end)
     end, { nargs = 1, range = true })
 end
 

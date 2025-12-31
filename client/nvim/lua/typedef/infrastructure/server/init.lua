@@ -83,7 +83,7 @@ end
 function Server:send(method, payload)
     local promise = Promise.new()
 
-    if not self.connection or not self.connection.is_active() then
+    if not self.connection or not self.connection:is_active() then
         promise:reject({ message = "RPC server connection is closed" })
         return promise
     end
@@ -94,7 +94,7 @@ function Server:send(method, payload)
 
     local encoded_message = self.encoder.encode(message) .. "\n"
 
-    self.connection:write(encoded_message)
+    self.connection:send(encoded_message)
 
     return promise
 end
