@@ -16,7 +16,7 @@ function Server.new(rpc, encoder)
         return instance
     end
 
-    local self = setmetatable({
+    instance = setmetatable({
         running = false,
         encoder = encoder,
         pending_requests = Map.new(),
@@ -24,8 +24,8 @@ function Server.new(rpc, encoder)
         connection = nil,
         rpc = rpc,
     }, Server)
-    instance = self
-    return self
+
+    return instance
 end
 
 function Server:start()
