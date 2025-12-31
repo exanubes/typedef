@@ -10,4 +10,4 @@
 ---@field start fun(self: Server)
 
 ---@class RpcClient
----@field send fun(self: Server, method: string, payload: table): Promise
+---@field send fun(self: RpcClient, method: string, payload: table): Promise

@@ -1,0 +1,2 @@
+---@class CodegenRepository
+---@field generate fun(self: CodegenRepository, input: string, input_type: string, format: string): Promise
