@@ -1,9 +1,12 @@
 local drivers = require("typedef.drivers")
 local M = {}
+local config = {
+    rpc_server_binary = "",
+}
 
-function M.setup()
-    vim.notify("Hello World", vim.log.levels.INFO)
-    drivers.register()
+---@param config TypedefConfig
+function M.setup(config)
+    drivers.register(config)
 end
 
 return M

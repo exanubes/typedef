@@ -98,3 +98,5 @@ function Server:send(method, payload)
 
     return promise
 end
+
+return Server

@@ -18,6 +18,7 @@ function JsonEncoder.decode(data)
 
     if not ok then
         JsonEncoder.error("JSON decoding failed: " .. result)
+        return nil
     end
 
     return result

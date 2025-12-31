@@ -14,11 +14,11 @@ function M.register(server)
             vim.notify("[TypedefJson] invalid format: " .. arg, vim.log.levels.ERROR)
             return
         end
-        -- server:start()
+        server:start()
         local input_reader = ChainReader.new({ SelectionReader.new(opts.range > 0), YankReader.new() })
         local codegen_repository = Codegen.new(server)
         local input = input_reader:read()
-        -- codegen_repository:generate(input, "json", format)
+        codegen_repository:generate(input, "json", format)
     end, { nargs = 1, range = true })
 end
 
