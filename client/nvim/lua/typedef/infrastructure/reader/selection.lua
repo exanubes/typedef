@@ -1,12 +1,20 @@
+local visual_block_mode = "\22" --- ctrl+v
 local SelectionReader = {}
 SelectionReader.__index = SelectionReader
 
+---@param with_range boolean
 ---@return InputReader
-function SelectionReader.new()
-    return setmetatable({}, SelectionReader)
+function SelectionReader.new(with_range)
+    return setmetatable({ with_range = with_range }, SelectionReader)
 end
 
 function SelectionReader:read()
+    local mode = vim.fn.mode()
+
+    if not self.with_range and mode ~= "v" and mode ~= "V" and mode ~= visual_block_mode then
+        return ""
+    end
+
     local bufnr = 0
     local start_pos = vim.fn.getpos("'<")
     local end_pos = vim.fn.getpos("'>")
