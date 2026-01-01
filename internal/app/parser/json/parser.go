@@ -59,7 +59,9 @@ func (parser *AstParser) next_token() {
 // Entry token: {
 // Exit  token: one after }
 func (parser *AstParser) parse_object() (*ast.ObjectNode, error) {
-	parser.expect(domain.LBRACE)
+	if err := parser.expect(domain.LBRACE); err != nil {
+		return nil, err
+	}
 
 	var result ast.ObjectNode
 
@@ -83,7 +85,9 @@ func (parser *AstParser) parse_object() (*ast.ObjectNode, error) {
 			result.Pairs = append(result.Pairs, node)
 		}
 
-		parser.expect(domain.RBRACE)
+		if err := parser.expect(domain.RBRACE); err != nil {
+			return nil, err
+		}
 	} else {
 		return nil, fmt.Errorf("Expected value, received %s", parser.current.Literal)
 	}
@@ -102,7 +106,9 @@ func (parser *AstParser) create_pair_node() (*ast.PairNode, error) {
 	}
 
 	result.Key = val.(*ast.StringNode)
-	parser.expect(domain.COLON)
+	if err := parser.expect(domain.COLON); err != nil {
+		return nil, err
+	}
 	result.Value, err = parser.parse_value()
 
 	if err != nil {
@@ -116,7 +122,10 @@ func (parser *AstParser) create_pair_node() (*ast.PairNode, error) {
 // Exit  token: one after ]
 func (parser *AstParser) parse_array() (*ast.ArrayNode, error) {
 	var result ast.ArrayNode
-	parser.expect(domain.LBRACKET)
+
+	if err := parser.expect(domain.LBRACKET); err != nil {
+		return nil, err
+	}
 
 	if parser.advance_if(domain.RBRACKET) {
 		return &result, nil
