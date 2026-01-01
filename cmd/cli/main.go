@@ -7,6 +7,7 @@ import (
 	"os/signal"
 
 	"github.com/exanubes/typedef/internal/drivers/cli"
+	"github.com/exanubes/typedef/internal/infrastructure/version"
 )
 
 // Build-time variables (injected via -ldflags)
@@ -17,6 +18,15 @@ var (
 )
 
 func main() {
+	v := version.New()
+	if v.Selected() {
+		v.Print(map[string]string{
+			"version":    Version,
+			"commit_sha": CommitSHA,
+			"build_time": BuildTime,
+		})
+		return
+	}
 	args := os.Args[1:]
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
