@@ -20,3 +20,5 @@ build-macos:
 build-wasm:
 	CGO_ENABLED=0 GOOS=js GOARCH=wasm go build -o dist/wasm/main.wasm ./cmd/wasm
 
+build-rpc:
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o dist/rpc/ ./cmd/typedef-rpc

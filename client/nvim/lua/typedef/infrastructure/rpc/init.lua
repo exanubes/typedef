@@ -83,6 +83,7 @@ function Rpc:connect(message_handler)
             return
         end
         if data then
+            message_handler(data)
             -- TODO: add logs
         end
     end)

@@ -10,22 +10,20 @@ end
 
 function SelectionReader:read()
     local mode = vim.fn.mode()
+    local buf = vim.api.nvim_get_current_buf()
+    local start_row, start_col = unpack(vim.api.nvim_buf_get_mark(buf, "["))
+    local end_row, end_col = unpack(vim.api.nvim_buf_get_mark(buf, "]"))
 
+    vim.notify(
+        "RANGE: " .. vim.inspect({ start_row = start_row, start_col = start_col, end_col = end_col, end_row = end_row })
+    )
     if not self.with_range and mode ~= "v" and mode ~= "V" and mode ~= visual_block_mode then
         return ""
     end
 
     local bufnr = 0
-    local start_pos = vim.fn.getpos("'<")
-    local end_pos = vim.fn.getpos("'>")
 
-    local start_row = start_pos[2] - 1
-    local start_col = start_pos[3]
-    local end_row = end_pos[2]
-    local end_col = end_pos[3]
-
-    local lines = vim.api.nvim_buf_get_lines(bufnr, start_row, end_row, false)
-
+    local lines = vim.api.nvim_buf_get_lines(bufnr, start_row - 1, end_row, false)
     if #lines == 0 then
         return ""
     end
