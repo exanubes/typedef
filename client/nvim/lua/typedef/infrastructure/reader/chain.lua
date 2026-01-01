@@ -9,13 +9,12 @@ end
 function ChainReader:read()
     for index, reader in ipairs(self.readers) do
         local result = reader:read()
-        vim.notify("index: " .. index .. "result: " .. result)
         if result ~= "" then
             return result
         end
     end
 
-    return "No valid json objects"
+    return ""
 end
 
 return ChainReader

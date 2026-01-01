@@ -3,3 +3,6 @@
 
 ---@class InputReader
 ---@field read fun(self: InputReader): string
+
+---@class OutputWriter
+---@field write fun(self: OutputWriter, output: string)
