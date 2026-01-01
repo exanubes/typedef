@@ -42,7 +42,11 @@ func (service *CodegenService) Execute(options domain.CodegenOptions) (string, e
 		return "", fmt.Errorf("%s parser is not supported", options.InputType)
 	}
 
-	ast := parser.Parse()
+	ast, err := parser.Parse()
+
+	if err != nil {
+		return "", fmt.Errorf("Could not parse json: %w", err)
+	}
 	graph_root := service.graph.Generate(ast)
 
 	codegen := service.codegen.Create(options.Format)

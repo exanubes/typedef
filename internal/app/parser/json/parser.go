@@ -1,7 +1,7 @@
 package json
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/exanubes/typedef/internal/app/ast"
@@ -27,23 +27,28 @@ func New(lexer lexer.Lexer) *AstParser {
 	return parser
 }
 
-func (parser *AstParser) Parse() *ast.Program {
+func (parser *AstParser) Parse() (*ast.Program, error) {
 	program := &ast.Program{}
 	for !parser.current_is(domain.EOF) {
 		var value ast.Node
+		var err error
 		switch parser.current.Type {
 		case domain.LBRACE:
-			value = parser.parse_object()
+			value, err = parser.parse_object()
 		case domain.LBRACKET:
-			value = parser.parse_array()
+			value, err = parser.parse_array()
 		default:
-			log.Fatalf("Expected { or [, received %s", parser.current.Literal)
+			return nil, fmt.Errorf("Expected { or [, received %s", parser.current.Literal)
+		}
+
+		if err != nil {
+			return nil, err
 		}
 
 		program.Value = value
 	}
 
-	return program
+	return program, nil
 }
 
 func (parser *AstParser) next_token() {
@@ -53,70 +58,96 @@ func (parser *AstParser) next_token() {
 
 // Entry token: {
 // Exit  token: one after }
-func (parser *AstParser) parse_object() *ast.ObjectNode {
+func (parser *AstParser) parse_object() (*ast.ObjectNode, error) {
 	parser.expect(domain.LBRACE)
 
 	var result ast.ObjectNode
 
 	if parser.advance_if(domain.RBRACE) {
-		return &result
+		return &result, nil
 	}
 
 	if parser.current_is(domain.STRING) {
-		result.Pairs = append(result.Pairs, parser.create_pair_node())
+		node, err := parser.create_pair_node()
+		if err != nil {
+			return nil, err
+		}
+
+		result.Pairs = append(result.Pairs, node)
 
 		for parser.advance_if(domain.COMMA) {
-			result.Pairs = append(result.Pairs, parser.create_pair_node())
+			node, err := parser.create_pair_node()
+			if err != nil {
+				return nil, err
+			}
+			result.Pairs = append(result.Pairs, node)
 		}
 
 		parser.expect(domain.RBRACE)
 	} else {
-		log.Fatalf("Expected value, received %s", parser.current.Literal)
+		return nil, fmt.Errorf("Expected value, received %s", parser.current.Literal)
 	}
 
-	return &result
+	return &result, nil
 }
 
 // Entry token: string
 // Exit  token: comma OR }
-func (parser *AstParser) create_pair_node() *ast.PairNode {
+func (parser *AstParser) create_pair_node() (*ast.PairNode, error) {
 	var result ast.PairNode
-	result.Key = parser.parse_value().(*ast.StringNode)
+	val, err := parser.parse_value()
+
+	if err != nil {
+		return nil, err
+	}
+
+	result.Key = val.(*ast.StringNode)
 	parser.expect(domain.COLON)
-	result.Value = parser.parse_value()
-	return &result
+	result.Value, err = parser.parse_value()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 // Entry token: [
 // Exit  token: one after ]
-func (parser *AstParser) parse_array() *ast.ArrayNode {
+func (parser *AstParser) parse_array() (*ast.ArrayNode, error) {
 	var result ast.ArrayNode
 	parser.expect(domain.LBRACKET)
 
 	if parser.advance_if(domain.RBRACKET) {
-		return &result
+		return &result, nil
 	}
-
-	result.Elements = append(result.Elements, parser.parse_value())
+	value, err := parser.parse_value()
+	if err != nil {
+		return nil, err
+	}
+	result.Elements = append(result.Elements, value)
 
 	for parser.advance_if(domain.COMMA) {
-		result.Elements = append(result.Elements, parser.parse_value())
+		value, err := parser.parse_value()
+		if err != nil {
+			return nil, err
+		}
+		result.Elements = append(result.Elements, value)
 	}
 
-	parser.expect(domain.RBRACKET)
-
-	return &result
+	return &result, parser.expect(domain.RBRACKET)
 }
 
 // Enter token: value
 // Exit  token: next token
-func (parser *AstParser) parse_value() ast.Node {
+func (parser *AstParser) parse_value() (ast.Node, error) {
 	var result ast.Node
+	var err error
 	switch parser.current.Type {
 	case domain.LBRACE:
-		result = parser.parse_object()
+		result, err = parser.parse_object()
 	case domain.LBRACKET:
-		result = parser.parse_array()
+		result, err = parser.parse_array()
 	case domain.NUMBER:
 		result = parser.create_number_node()
 		parser.next_token()
@@ -130,10 +161,10 @@ func (parser *AstParser) parse_value() ast.Node {
 		result = parser.create_null_node()
 		parser.next_token()
 	default:
-		log.Fatalf("Expected value, received %s", parser.current.Literal)
+		err = fmt.Errorf("Expected value, received %s", parser.current.Literal)
 	}
 
-	return result
+	return result, err
 }
 
 func (parser *AstParser) create_boolean_node() *ast.BooleanNode {
@@ -165,12 +196,14 @@ func (parser *AstParser) create_number_node() *ast.NumberNode {
 	return &result
 }
 
-func (parser *AstParser) expect(token domain.TokenType) {
+func (parser *AstParser) expect(token domain.TokenType) error {
 	if !parser.current_is(token) {
-		log.Fatalf("Expected %s, received %s", token, parser.current.Literal)
+		return fmt.Errorf("Expected %s, received %s", token, parser.current.Literal)
 	}
 
 	parser.next_token()
+
+	return nil
 }
 
 func (parser *AstParser) current_is(token domain.TokenType) bool {

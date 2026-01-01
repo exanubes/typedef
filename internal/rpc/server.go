@@ -64,7 +64,7 @@ func (server *Server) handle_request(request JSONRPCRequest) {
 
 	result, err := handler(request.ID, request.Params)
 	if err != nil {
-		server.send_error(request.ID, InternalError, fmt.Sprintf("Unhandled Exception: %s", err.Error()))
+		server.send_error(request.ID, InternalError, err.Error())
 		return
 	}
 

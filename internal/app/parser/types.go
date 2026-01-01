@@ -6,7 +6,7 @@ import (
 )
 
 type Parser interface {
-	Parse() *ast.Program
+	Parse() (*ast.Program, error)
 }
 
 type Factory interface {
