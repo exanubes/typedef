@@ -30,27 +30,25 @@ jobs:
           name: cli-macos
           path: ./artifacts/darwin
 
+      - name: Make packaging script executable
+        run: chmod +x scripts/package-binary.sh
+
       - name: Prepare release assets
         run: |
-          # Create release directory
           mkdir -p release
 
-          # Rename and make binaries executable
-          cp ./artifacts/linux/amd64/cli release/typedef-linux-amd64
-          cp ./artifacts/linux/arm64/cli release/typedef-linux-arm64
-          cp ./artifacts/darwin/amd64/cli release/typedef-darwin-amd64
-          cp ./artifacts/darwin/arm64/cli release/typedef-darwin-arm64
+          ./scripts/package-binary.sh ./artifacts/linux/amd64/cli linux amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/linux/arm64/cli linux arm64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/amd64/cli darwin amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/arm64/cli darwin arm64 ./release
 
-          chmod +x release/typedef-*
-
-          # Generate checksums
           cd release
-          sha256sum typedef-* > checksums.txt
+          sha256sum typedef-*.tar.gz > checksums.txt
 
       - name: Generate changelog
         id: changelog
         run: |
-          # Get previous tag (fallback to first commit if no previous tag)
+          # Get previous tag 
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
 
           # Generate changelog

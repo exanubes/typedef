@@ -55,16 +55,34 @@ go build -o typedef main.go
 
 Download the latest release for your platform from [GitHub Releases](https://github.com/exanubes/typedef/releases):
 
-- **macOS (Intel)**: `typedef-darwin-amd64`
-- **macOS (Apple Silicon)**: `typedef-darwin-arm64`
-- **Linux (Intel/AMD)**: `typedef-linux-amd64`
-- **Linux (ARM)**: `typedef-linux-arm64`
+- **macOS (Intel)**: `typedef-darwin-amd64.tar.gz`
+- **macOS (Apple Silicon)**: `typedef-darwin-arm64.tar.gz`
+- **Linux (Intel/AMD)**: `typedef-linux-amd64.tar.gz`
+- **Linux (ARM)**: `typedef-linux-arm64.tar.gz`
 
-Make the binary executable and verify it works:
+Extract and install:
 
 ```bash
-chmod +x typedef
+# Download and extract (example for Linux amd64)
+wget https://github.com/exanubes/typedef/releases/latest/download/typedef-linux-amd64.tar.gz
+tar -xzf typedef-linux-amd64.tar.gz
+
+# The archive contains: typedef (binary), README.md, LICENSE
+# Verify it works
 ./typedef --format go --input '{"test": 1}'
+
+# Add to PATH (optional)
+sudo mv typedef /usr/local/bin/
+```
+
+**Verify Download Integrity:**
+
+```bash
+# Download checksums
+wget https://github.com/exanubes/typedef/releases/latest/download/checksums.txt
+
+# Verify checksum
+sha256sum -c checksums.txt --ignore-missing
 ```
 
 ### Option 2: Build from Source
