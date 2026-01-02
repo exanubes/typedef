@@ -41,7 +41,8 @@ func CodegenTestSuite(test *testing.T, name string, codegen generator.CodeGenera
 		parser := parser.New(lexer)
 
 		graph := graph.New(dedup.New())
-		result := strings.TrimSpace(codegen.Generate(graph.Generate(parser.Parse())))
+		ast, _ := parser.Parse()
+		result := strings.TrimSpace(codegen.Generate(graph.Generate(ast)))
 		expected := strings.TrimSpace(read_stub_file(name))
 		errors := utils.CompareLineByLine(expected, result)
 		if len(errors) != 0 {

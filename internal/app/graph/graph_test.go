@@ -28,7 +28,7 @@ func TestNamedTypes(test *testing.T) {
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
-	program := parser.Parse()
+	program, _ := parser.Parse()
 
 	engine := New(dedup.New())
 	graph := engine.Generate(program)
@@ -54,7 +54,7 @@ func TestCanonicalSerialization(test *testing.T) {
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
-	program := parser.Parse()
+	program, _ := parser.Parse()
 
 	engine := New(dedup.New())
 	graph := engine.Generate(program)
@@ -76,7 +76,7 @@ func TestGraphTypeNodes(test *testing.T) {
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
-	program := parser.Parse()
+	program, _ := parser.Parse()
 	engine := New(dedup.New())
 	graph := engine.Generate(program)
 	testcases := []struct {
@@ -108,7 +108,7 @@ func TestGraphArrayTypeNodes(test *testing.T) {
 	lexer := json.New(input)
 	parser := parser.New(lexer)
 
-	program := parser.Parse()
+	program, _ := parser.Parse()
 	engine := New(dedup.New())
 	graph := engine.Generate(program)
 
