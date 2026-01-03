@@ -1,7 +1,7 @@
 local env = require("typedef.env")
 local data_dir = vim.fn.stdpath("data") .. "/typedef"
-local binary_path = data_dir .. "/typedef-rpc"
 local binary_name = "typedef-rpc"
+local binary_path = data_dir .. "/" .. binary_name
 local repo_name = "exanubes/typedef"
 
 local function has_rpc_binary()
