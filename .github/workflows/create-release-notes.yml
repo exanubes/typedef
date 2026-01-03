@@ -30,6 +30,18 @@ jobs:
           name: cli-macos
           path: ./artifacts/darwin
 
+      - name: Download RPC Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rpc-linux
+          path: ./artifacts/linux
+
+      - name: Download RPC macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rpc-macos
+          path: ./artifacts/darwin
+
       - name: Make packaging script executable
         run: chmod +x scripts/package-binary.sh
 
@@ -37,10 +49,17 @@ jobs:
         run: |
           mkdir -p release
 
-          ./scripts/package-binary.sh ./artifacts/linux/amd64/cli linux amd64 ./release
-          ./scripts/package-binary.sh ./artifacts/linux/arm64/cli linux arm64 ./release
-          ./scripts/package-binary.sh ./artifacts/darwin/amd64/cli darwin amd64 ./release
-          ./scripts/package-binary.sh ./artifacts/darwin/arm64/cli darwin arm64 ./release
+          # Package CLI binaries
+          ./scripts/package-binary.sh ./artifacts/linux/amd64/typedef-cli linux amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/linux/arm64/typedef-cli linux arm64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/amd64/typedef-cli darwin amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/arm64/typedef-cli darwin arm64 ./release
+
+          # Package RPC binaries
+          ./scripts/package-binary.sh ./artifacts/linux/amd64/typedef-rpc linux amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/linux/arm64/typedef-rpc linux arm64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/amd64/typedef-rpc darwin amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/arm64/typedef-rpc darwin arm64 ./release
 
           cd release
           sha256sum typedef-*.tar.gz > checksums.txt

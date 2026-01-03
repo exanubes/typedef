@@ -14,18 +14,21 @@ OS="$2"
 ARCH="$3"
 OUTPUT_DIR="$4"
 
-# Derived values
-ARCHIVE_NAME="typedef-${OS}-${ARCH}.tar.gz"
-TEMP_DIR="temp-${OS}-${ARCH}"
+# Extract binary name from path
+BINARY_NAME=$(basename "${BINARY_PATH}")
 
-echo "Packaging ${OS}-${ARCH}..."
+# Derived values
+ARCHIVE_NAME="${BINARY_NAME}-${OS}-${ARCH}.tar.gz"
+TEMP_DIR="temp-${BINARY_NAME}-${OS}-${ARCH}"
+
+echo "Packaging ${BINARY_NAME} for ${OS}-${ARCH}..."
 
 # Create temporary directory
 mkdir -p "${TEMP_DIR}"
 
-# Copy and rename binary
-cp "${BINARY_PATH}" "${TEMP_DIR}/typedef"
-chmod +x "${TEMP_DIR}/typedef"
+# Copy binary (preserve original name)
+cp "${BINARY_PATH}" "${TEMP_DIR}/${BINARY_NAME}"
+chmod +x "${TEMP_DIR}/${BINARY_NAME}"
 
 # Copy documentation (if exists)
 if [ -f "README.md" ]; then

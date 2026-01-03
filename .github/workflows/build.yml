@@ -150,3 +150,81 @@ jobs:
           name: wasm
           path: dist/wasm/main.wasm
           retention-days: 1
+
+  build-rpc-linux:
+    name: Build RPC (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - run: go mod download
+
+      - name: Build RPC Linux binaries
+        if: ${{ inputs.build-all-platforms }}
+        run: |
+          make build-rpc-linux \
+            VERSION="${{ inputs.version }}" \
+            COMMIT_SHA="${{ inputs.commit-sha }}" \
+            BUILD_TIME="${{ inputs.build-time }}"
+
+      - name: Upload RPC Linux artifacts
+        if: ${{ inputs.build-all-platforms }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpc-linux
+          path: dist/rpc/linux/*
+          retention-days: 1
+
+  build-rpc-macos:
+    name: Build RPC (macOS)
+    runs-on: macos-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - run: go mod download
+
+      - name: Build RPC macOS binaries
+        if: ${{ inputs.build-all-platforms }}
+        run: |
+          make build-rpc-macos \
+            VERSION="${{ inputs.version }}" \
+            COMMIT_SHA="${{ inputs.commit-sha }}" \
+            BUILD_TIME="${{ inputs.build-time }}"
+
+      - name: Upload RPC macOS artifacts
+        if: ${{ inputs.build-all-platforms }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpc-macos
+          path: dist/rpc/darwin/*
+          retention-days: 1
