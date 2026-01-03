@@ -66,6 +66,15 @@ jobs:
       pnpm-version: '10.11.0'
       upload-artifacts: true  # Upload artifacts for releases
 
+  build-nvim:
+    needs: [build, prepare-version]
+    uses: ./.github/workflows/build-nvim.yml
+    with:
+      version: ${{ github.ref_name }}
+      commit-sha: ${{ github.sha }}
+      build-time: ${{ needs.prepare-version.outputs.build-time }}
+    secrets: inherit
+
   publish-pages:
     needs: build-web
     uses: ./.github/workflows/publish-pages.yml

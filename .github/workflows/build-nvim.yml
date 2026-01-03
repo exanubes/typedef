@@ -1,0 +1,107 @@
+name: Build Neovim Plugin
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version string (e.g., v0.0.6)'
+        required: true
+        type: string
+      commit-sha:
+        description: 'Git commit SHA'
+        required: true
+        type: string
+      build-time:
+        description: 'Build timestamp (RFC3339 format)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  publish-plugin:
+    name: Publish to typedef.nvim
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Generate build time if not provided
+        id: buildtime
+        run: |
+          if [ -z "${{ inputs.build-time }}" ]; then
+            BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          else
+            BUILD_TIME="${{ inputs.build-time }}"
+          fi
+          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+
+      - name: Extract short commit SHA
+        id: commit
+        run: |
+          COMMIT_SHORT="${{ inputs.commit-sha }}"
+          COMMIT_SHORT="${COMMIT_SHORT:0:7}"
+          echo "commit_short=$COMMIT_SHORT" >> $GITHUB_OUTPUT
+
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+
+      - name: Setup SSH authentication
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.NVIM_PLUGIN_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf "%s\n" "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+          echo 'GIT_SSH_COMMAND=ssh -i ~/.ssh/id_rsa -o IdentitiesOnly=yes' >> $GITHUB_ENV
+
+      - name: Configure nvim remote
+        run: |
+          git remote add nvim git@github.com:exanubes/typedef.nvim.git
+
+      - name: Create release commit
+        run: |
+          git fetch nvim master || true
+          git checkout -B nvim-master FETCH_HEAD 2>/dev/null || \
+          git checkout --orphan nvim-master
+
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+
+          cp -r client/nvim/. .
+
+          cat > lua/typedef/env.lua <<EOF
+          return {
+            version = "${{ inputs.version }}",
+            commit  = "${{ steps.commit.outputs.commit_short }}",
+            build   = "${{ steps.buildtime.outputs.build_time }}"
+          }
+          EOF
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Release produced no changes — aborting"
+            exit 1
+          fi
+
+          git commit -m "Release plugin version ${{ inputs.version }}"
+
+          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+
+          git push nvim nvim-master:master
+
+          git push nvim "${{ inputs.version }}"
