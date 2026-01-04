@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'Version string (e.g., v0.0.6)'
+        description: 'Version string (e.g., v1.2.3)'
         required: true
         type: string
       commit-sha:
@@ -21,13 +21,22 @@ jobs:
   publish-plugin:
     name: Publish to typedef.nvim
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
-      - name: Checkout code
+      - name: Checkout source repository 
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          repository: exanubes/typedef
+          ref: ${{ inputs.commit-sha }}
+          path: src
+
+      - name: Checkout plugin repository 
+        uses: actions/checkout@v4
+        with:
+          repository: exanubes/typedef.nvim
+          ssh-key: ${{ secrets.NVIM_PLUGIN_DEPLOY_KEY }}
+          path: artifact
 
       - name: Generate build time if not provided
         id: buildtime
@@ -49,8 +58,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
 
       - name: Setup SSH authentication
@@ -69,19 +78,19 @@ jobs:
 
           echo 'GIT_SSH_COMMAND=ssh -i ~/.ssh/id_rsa -o IdentitiesOnly=yes' >> $GITHUB_ENV
 
-      - name: Configure nvim remote
-        run: |
-          git remote add nvim git@github.com:exanubes/typedef.nvim.git
-
       - name: Create release commit
         run: |
-          git fetch nvim master || true
-          git checkout -B nvim-master FETCH_HEAD 2>/dev/null || \
-          git checkout --orphan nvim-master
+          set -euo pipefail
+          test -d src/client/nvim || {
+            echo "client/nvim not found - aborting"
+            exit 1
+          }
 
+          cd artifact
+          git checkout -B master
           find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 
-          cp -r client/nvim/. .
+          cp -r ../src/client/nvim/. .
 
           cat > lua/typedef/env.lua <<EOF
           return {
@@ -90,7 +99,7 @@ jobs:
             build   = "${{ steps.buildtime.outputs.build_time }}"
           }
           EOF
-
+  
           git add -A
 
           if git diff --cached --quiet; then
@@ -102,6 +111,6 @@ jobs:
 
           git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
 
-          git push nvim nvim-master:master
+          git push origin master
 
-          git push nvim "${{ inputs.version }}"
+          git push origin --tags
