@@ -30,12 +30,13 @@ jobs:
           repository: exanubes/typedef
           ref: ${{ inputs.commit-sha }}
           path: src
+          persist-credentials: false
 
       - name: Checkout plugin repository 
         uses: actions/checkout@v4
         with:
           repository: exanubes/typedef.nvim
-          ssh-key: ${{ secrets.NVIM_PLUGIN_DEPLOY_KEY }}
+          token: ${{ secrets.PLUGIN_REPO_PAT }}
           path: artifact
 
       - name: Generate build time if not provided
@@ -62,25 +63,8 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
 
-      - name: Setup SSH authentication
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.NVIM_PLUGIN_DEPLOY_KEY }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          printf "%s\n" "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-          echo 'GIT_SSH_COMMAND=ssh -i ~/.ssh/id_rsa -o IdentitiesOnly=yes' >> $GITHUB_ENV
-
       - name: Create release commit
         run: |
-          set -euo pipefail
           test -d src/client/nvim || {
             echo "client/nvim not found - aborting"
             exit 1
