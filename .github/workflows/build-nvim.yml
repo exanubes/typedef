@@ -16,6 +16,23 @@ on:
         required: false
         type: string
         default: ""
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version string (e.g., 1.2.3)"
+        required: true
+        type: string
+        default: "dev"
+      commit-sha:
+        description: "Git commit SHA (leave empty for current commit)"
+        required: false
+        type: string
+        default: ""
+      build-time:
+        description: "Build timestamp (RFC3339 format, leave empty to auto-generate)"
+        required: false
+        type: string
+        default: ""
 
 jobs:
   publish-plugin:
@@ -53,8 +70,12 @@ jobs:
       - name: Extract short commit SHA
         id: commit
         run: |
-          COMMIT_SHORT="${{ inputs.commit-sha }}"
-          COMMIT_SHORT="${COMMIT_SHORT:0:7}"
+          if [ -z "${{ inputs.commit-sha }}" ]; then
+            COMMIT_FULL="${{ github.sha }}"
+          else
+            COMMIT_FULL="${{ inputs.commit-sha }}"
+          fi
+          COMMIT_SHORT="${COMMIT_FULL:0:7}"
           echo "commit_short=$COMMIT_SHORT" >> $GITHUB_OUTPUT
 
       - name: Configure Git

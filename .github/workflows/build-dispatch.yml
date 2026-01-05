@@ -1,0 +1,668 @@
+name: Manual Build Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      # Target Selection
+      build_cli:
+        description: 'Build CLI binary'
+        required: false
+        type: boolean
+        default: false
+      build_rpc:
+        description: 'Build RPC binary'
+        required: false
+        type: boolean
+        default: false
+      build_wasm:
+        description: 'Build WASM binary'
+        required: false
+        type: boolean
+        default: false
+      build_web:
+        description: 'Build Web application (requires WASM)'
+        required: false
+        type: boolean
+        default: false
+      build_nvim:
+        description: 'Build and publish Neovim plugin'
+        required: false
+        type: boolean
+        default: false
+
+      # Platform Selection for CLI/RPC
+      build_linux_amd64:
+        description: 'Build for Linux amd64'
+        required: false
+        type: boolean
+        default: true
+      build_linux_arm64:
+        description: 'Build for Linux arm64'
+        required: false
+        type: boolean
+        default: true
+      build_macos_amd64:
+        description: 'Build for macOS amd64'
+        required: false
+        type: boolean
+        default: true
+      build_macos_arm64:
+        description: 'Build for macOS arm64'
+        required: false
+        type: boolean
+        default: true
+
+      # Build Metadata
+      version:
+        description: 'Version string (e.g., 0.0.5, leave empty for "dev")'
+        required: false
+        type: string
+        default: 'dev'
+      commit-sha:
+        description: 'Git commit SHA (leave empty for current commit)'
+        required: false
+        type: string
+        default: ''
+      build-time:
+        description: 'Build timestamp RFC3339 (leave empty for auto-generate)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  validate:
+    name: Validate Inputs
+    runs-on: ubuntu-latest
+    outputs:
+      targets_for_build: ${{ steps.resolve.outputs.targets_for_build }}
+      build_cli: ${{ steps.resolve.outputs.build_cli }}
+      build_rpc: ${{ steps.resolve.outputs.build_rpc }}
+      build_wasm: ${{ steps.resolve.outputs.build_wasm }}
+      build_web: ${{ steps.resolve.outputs.build_web }}
+      build_nvim: ${{ steps.resolve.outputs.build_nvim }}
+      build_linux: ${{ steps.resolve.outputs.build_linux }}
+      build_macos: ${{ steps.resolve.outputs.build_macos }}
+      linux_platforms: ${{ steps.resolve.outputs.linux_platforms }}
+      macos_platforms: ${{ steps.resolve.outputs.macos_platforms }}
+
+    steps:
+      - name: Validate and resolve inputs
+        id: resolve
+        run: |
+          BUILD_CLI="${{ inputs.build_cli }}"
+          BUILD_RPC="${{ inputs.build_rpc }}"
+          BUILD_WASM="${{ inputs.build_wasm }}"
+          BUILD_WEB="${{ inputs.build_web }}"
+          BUILD_NVIM="${{ inputs.build_nvim }}"
+
+          # Check at least one target selected
+          if [[ "$BUILD_CLI" != "true" && "$BUILD_RPC" != "true" && "$BUILD_WASM" != "true" && "$BUILD_WEB" != "true" && "$BUILD_NVIM" != "true" ]]; then
+            echo "::error::At least one build target must be selected"
+            exit 1
+          fi
+
+          # Check platform selection for CLI/RPC
+          LINUX_AMD64="${{ inputs.build_linux_amd64 }}"
+          LINUX_ARM64="${{ inputs.build_linux_arm64 }}"
+          MACOS_AMD64="${{ inputs.build_macos_amd64 }}"
+          MACOS_ARM64="${{ inputs.build_macos_arm64 }}"
+
+          if [[ "$BUILD_CLI" == "true" || "$BUILD_RPC" == "true" ]]; then
+            if [[ "$LINUX_AMD64" != "true" && "$LINUX_ARM64" != "true" && "$MACOS_AMD64" != "true" && "$MACOS_ARM64" != "true" ]]; then
+              echo "::error::At least one platform must be selected when building CLI or RPC"
+              exit 1
+            fi
+          fi
+
+          # Check nvim secret if needed
+          if [[ "$BUILD_NVIM" == "true" ]]; then
+            if [[ -z "${{ secrets.PLUGIN_REPO_PAT }}" ]]; then
+              echo "::error::PLUGIN_REPO_PAT secret is required for nvim builds but is not configured"
+              exit 1
+            fi
+          fi
+
+          # Build comma-separated targets
+          TARGETS=""
+          [[ "$BUILD_CLI" == "true" ]] && TARGETS="${TARGETS}cli,"
+          [[ "$BUILD_RPC" == "true" ]] && TARGETS="${TARGETS}rpc,"
+          [[ "$BUILD_WASM" == "true" ]] && TARGETS="${TARGETS}wasm,"
+          TARGETS="${TARGETS%,}"  # Remove trailing comma
+
+          # Determine which OS builds are needed
+          BUILD_LINUX="false"
+          BUILD_MACOS="false"
+          [[ "$LINUX_AMD64" == "true" || "$LINUX_ARM64" == "true" ]] && BUILD_LINUX="true"
+          [[ "$MACOS_AMD64" == "true" || "$MACOS_ARM64" == "true" ]] && BUILD_MACOS="true"
+
+          # Build platform lists for matrix
+          LINUX_PLATFORMS="[]"
+          MACOS_PLATFORMS="[]"
+
+          if [[ "$BUILD_LINUX" == "true" ]]; then
+            LINUX_LIST=""
+            [[ "$LINUX_AMD64" == "true" ]] && LINUX_LIST="${LINUX_LIST}\"amd64\","
+            [[ "$LINUX_ARM64" == "true" ]] && LINUX_LIST="${LINUX_LIST}\"arm64\","
+            LINUX_LIST="${LINUX_LIST%,}"
+            LINUX_PLATFORMS="[${LINUX_LIST}]"
+          fi
+
+          if [[ "$BUILD_MACOS" == "true" ]]; then
+            MACOS_LIST=""
+            [[ "$MACOS_AMD64" == "true" ]] && MACOS_LIST="${MACOS_LIST}\"amd64\","
+            [[ "$MACOS_ARM64" == "true" ]] && MACOS_LIST="${MACOS_LIST}\"arm64\","
+            MACOS_LIST="${MACOS_LIST%,}"
+            MACOS_PLATFORMS="[${MACOS_LIST}]"
+          fi
+
+          # Output resolved values
+          echo "targets_for_build=$TARGETS" >> $GITHUB_OUTPUT
+          echo "build_cli=$BUILD_CLI" >> $GITHUB_OUTPUT
+          echo "build_rpc=$BUILD_RPC" >> $GITHUB_OUTPUT
+          echo "build_wasm=$BUILD_WASM" >> $GITHUB_OUTPUT
+          echo "build_web=$BUILD_WEB" >> $GITHUB_OUTPUT
+          echo "build_nvim=$BUILD_NVIM" >> $GITHUB_OUTPUT
+          echo "build_linux=$BUILD_LINUX" >> $GITHUB_OUTPUT
+          echo "build_macos=$BUILD_MACOS" >> $GITHUB_OUTPUT
+          echo "linux_platforms=$LINUX_PLATFORMS" >> $GITHUB_OUTPUT
+          echo "macos_platforms=$MACOS_PLATFORMS" >> $GITHUB_OUTPUT
+
+          echo "::notice::Resolved targets: $TARGETS"
+          echo "::notice::Linux platforms: $LINUX_PLATFORMS"
+          echo "::notice::macOS platforms: $MACOS_PLATFORMS"
+
+  metadata:
+    name: Prepare Build Metadata
+    runs-on: ubuntu-latest
+    needs: validate
+    outputs:
+      version: ${{ steps.metadata.outputs.version }}
+      commit-sha: ${{ steps.metadata.outputs.commit-sha }}
+      build-time: ${{ steps.metadata.outputs.build-time }}
+
+    steps:
+      - name: Generate metadata
+        id: metadata
+        run: |
+          # Version
+          VERSION="${{ inputs.version }}"
+          [[ -z "$VERSION" ]] && VERSION="dev"
+
+          # Commit SHA
+          if [[ -n "${{ inputs.commit-sha }}" ]]; then
+            COMMIT_FULL="${{ inputs.commit-sha }}"
+          else
+            COMMIT_FULL="${{ github.sha }}"
+          fi
+          COMMIT_SHORT="${COMMIT_FULL:0:7}"
+
+          # Build time
+          if [[ -n "${{ inputs.build-time }}" ]]; then
+            BUILD_TIME="${{ inputs.build-time }}"
+          else
+            BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "commit-sha=$COMMIT_SHORT" >> $GITHUB_OUTPUT
+          echo "build-time=$BUILD_TIME" >> $GITHUB_OUTPUT
+
+          echo "::notice::Version: $VERSION"
+          echo "::notice::Commit SHA: $COMMIT_SHORT"
+          echo "::notice::Build Time: $BUILD_TIME"
+
+  build-cli-linux:
+    name: Build CLI (Linux ${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [validate, metadata]
+    if: ${{ needs.validate.outputs.build_cli == 'true' && needs.validate.outputs.build_linux == 'true' }}
+    strategy:
+      matrix:
+        arch: ${{ fromJson(needs.validate.outputs.linux_platforms) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build CLI binary
+        run: |
+          mkdir -p dist/cli/linux/${{ matrix.arch }}
+          CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.arch }} go build \
+            -ldflags "-X main.Version=${{ needs.metadata.outputs.version }} -X main.CommitSHA=${{ needs.metadata.outputs.commit-sha }} -X main.BuildTime=${{ needs.metadata.outputs.build-time }}" \
+            -o dist/cli/linux/${{ matrix.arch }}/typedef-cli \
+            ./cmd/cli
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-linux-${{ matrix.arch }}
+          path: dist/cli/linux/${{ matrix.arch }}/typedef-cli
+          retention-days: 7
+
+  build-cli-macos:
+    name: Build CLI (macOS ${{ matrix.arch }})
+    runs-on: macos-latest
+    timeout-minutes: 5
+    needs: [validate, metadata]
+    if: ${{ needs.validate.outputs.build_cli == 'true' && needs.validate.outputs.build_macos == 'true' }}
+    strategy:
+      matrix:
+        arch: ${{ fromJson(needs.validate.outputs.macos_platforms) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build CLI binary
+        run: |
+          mkdir -p dist/cli/darwin/${{ matrix.arch }}
+          CGO_ENABLED=0 GOOS=darwin GOARCH=${{ matrix.arch }} go build \
+            -ldflags "-X main.Version=${{ needs.metadata.outputs.version }} -X main.CommitSHA=${{ needs.metadata.outputs.commit-sha }} -X main.BuildTime=${{ needs.metadata.outputs.build-time }}" \
+            -o dist/cli/darwin/${{ matrix.arch }}/typedef-cli \
+            ./cmd/cli
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-macos-${{ matrix.arch }}
+          path: dist/cli/darwin/${{ matrix.arch }}/typedef-cli
+          retention-days: 7
+
+  build-rpc-linux:
+    name: Build RPC (Linux ${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [validate, metadata]
+    if: ${{ needs.validate.outputs.build_rpc == 'true' && needs.validate.outputs.build_linux == 'true' }}
+    strategy:
+      matrix:
+        arch: ${{ fromJson(needs.validate.outputs.linux_platforms) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build RPC binary
+        run: |
+          mkdir -p dist/rpc/linux/${{ matrix.arch }}
+          CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.arch }} go build \
+            -ldflags "-X main.Version=${{ needs.metadata.outputs.version }} -X main.CommitSHA=${{ needs.metadata.outputs.commit-sha }} -X main.BuildTime=${{ needs.metadata.outputs.build-time }}" \
+            -o dist/rpc/linux/${{ matrix.arch }}/typedef-rpc \
+            ./cmd/rpc
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpc-linux-${{ matrix.arch }}
+          path: dist/rpc/linux/${{ matrix.arch }}/typedef-rpc
+          retention-days: 7
+
+  build-rpc-macos:
+    name: Build RPC (macOS ${{ matrix.arch }})
+    runs-on: macos-latest
+    timeout-minutes: 5
+    needs: [validate, metadata]
+    if: ${{ needs.validate.outputs.build_rpc == 'true' && needs.validate.outputs.build_macos == 'true' }}
+    strategy:
+      matrix:
+        arch: ${{ fromJson(needs.validate.outputs.macos_platforms) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build RPC binary
+        run: |
+          mkdir -p dist/rpc/darwin/${{ matrix.arch }}
+          CGO_ENABLED=0 GOOS=darwin GOARCH=${{ matrix.arch }} go build \
+            -ldflags "-X main.Version=${{ needs.metadata.outputs.version }} -X main.CommitSHA=${{ needs.metadata.outputs.commit-sha }} -X main.BuildTime=${{ needs.metadata.outputs.build-time }}" \
+            -o dist/rpc/darwin/${{ matrix.arch }}/typedef-rpc \
+            ./cmd/rpc
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpc-macos-${{ matrix.arch }}
+          path: dist/rpc/darwin/${{ matrix.arch }}/typedef-rpc
+          retention-days: 7
+
+  build-wasm:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [validate, metadata]
+    if: ${{ needs.validate.outputs.build_wasm == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build WASM binary
+        run: |
+          mkdir -p dist/wasm
+          CGO_ENABLED=0 GOOS=js GOARCH=wasm go build \
+            -ldflags "-X main.Version=${{ needs.metadata.outputs.version }} -X main.CommitSHA=${{ needs.metadata.outputs.commit-sha }} -X main.BuildTime=${{ needs.metadata.outputs.build-time }}" \
+            -o dist/wasm/main.wasm \
+            ./cmd/wasm
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm
+          path: dist/wasm/main.wasm
+          retention-days: 7
+
+  build-web:
+    name: Build Web Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [validate, metadata, build-wasm]
+    if: ${{ needs.validate.outputs.build_web == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wasm
+          path: dist/wasm/
+        continue-on-error: true
+
+      - name: Verify WASM exists
+        run: |
+          if [ ! -f dist/wasm/main.wasm ]; then
+            echo "::error::WASM artifact not found. Please select 'Build WASM' when building Web."
+            exit 1
+          fi
+
+      - name: Copy WASM to web source
+        run: |
+          cp dist/wasm/main.wasm client/web/src/js/rpc/main.wasm
+          ls -lh client/web/src/js/rpc/main.wasm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.11.0'
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('client/web/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        working-directory: client/web
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web application
+        working-directory: client/web
+        run: pnpm run build:prod
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: dist/web/*
+          retention-days: 7
+
+  build-nvim:
+    name: Build Neovim Plugin
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [validate, metadata]
+    if: ${{ needs.validate.outputs.build_nvim == 'true' }}
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: exanubes/typedef
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          path: src
+          persist-credentials: false
+
+      - name: Checkout plugin repository
+        uses: actions/checkout@v4
+        with:
+          repository: exanubes/typedef.nvim
+          token: ${{ secrets.PLUGIN_REPO_PAT }}
+          path: artifact
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create release commit
+        run: |
+          test -d src/client/nvim || {
+            echo "::error::client/nvim not found - aborting"
+            exit 1
+          }
+
+          cd artifact
+          git checkout -B master
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+
+          cp -r ../src/client/nvim/. .
+
+          cat > lua/typedef/env.lua <<EOF
+          return {
+            version = "${{ needs.metadata.outputs.version }}",
+            commit  = "${{ needs.metadata.outputs.commit-sha }}",
+            build   = "${{ needs.metadata.outputs.build-time }}"
+          }
+          EOF
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "::warning::Release produced no changes — skipping commit"
+            exit 0
+          fi
+
+          git commit -m "Release plugin version ${{ needs.metadata.outputs.version }}"
+
+          git tag -a "v${{ needs.metadata.outputs.version }}" -m "Release v${{ needs.metadata.outputs.version }}"
+
+          git push origin master
+
+          git push origin --tags
+
+          echo "::notice::Successfully published plugin version ${{ needs.metadata.outputs.version }}"
+
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [validate, metadata, build-cli-linux, build-cli-macos, build-rpc-linux, build-rpc-macos, build-wasm, build-web, build-nvim]
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Build Dispatch Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.metadata.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ needs.metadata.outputs.commit-sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Time:** ${{ needs.metadata.outputs.build-time }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # CLI builds
+          if [[ "${{ needs.validate.outputs.build_cli }}" == "true" ]]; then
+            echo "### CLI Builds" >> $GITHUB_STEP_SUMMARY
+            if [[ "${{ needs.build-cli-linux.result }}" == "success" ]]; then
+              echo "- ✅ Linux: ${{ needs.validate.outputs.linux_platforms }}" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-cli-linux.result }}" == "failure" ]]; then
+              echo "- ❌ Linux: Failed" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-cli-linux.result }}" == "skipped" ]]; then
+              echo "- ⏭️ Linux: Skipped (no platforms selected)" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            if [[ "${{ needs.build-cli-macos.result }}" == "success" ]]; then
+              echo "- ✅ macOS: ${{ needs.validate.outputs.macos_platforms }}" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-cli-macos.result }}" == "failure" ]]; then
+              echo "- ❌ macOS: Failed" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-cli-macos.result }}" == "skipped" ]]; then
+              echo "- ⏭️ macOS: Skipped (no platforms selected)" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # RPC builds
+          if [[ "${{ needs.validate.outputs.build_rpc }}" == "true" ]]; then
+            echo "### RPC Builds" >> $GITHUB_STEP_SUMMARY
+            if [[ "${{ needs.build-rpc-linux.result }}" == "success" ]]; then
+              echo "- ✅ Linux: ${{ needs.validate.outputs.linux_platforms }}" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-rpc-linux.result }}" == "failure" ]]; then
+              echo "- ❌ Linux: Failed" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-rpc-linux.result }}" == "skipped" ]]; then
+              echo "- ⏭️ Linux: Skipped (no platforms selected)" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            if [[ "${{ needs.build-rpc-macos.result }}" == "success" ]]; then
+              echo "- ✅ macOS: ${{ needs.validate.outputs.macos_platforms }}" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-rpc-macos.result }}" == "failure" ]]; then
+              echo "- ❌ macOS: Failed" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-rpc-macos.result }}" == "skipped" ]]; then
+              echo "- ⏭️ macOS: Skipped (no platforms selected)" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # WASM build
+          if [[ "${{ needs.validate.outputs.build_wasm }}" == "true" ]]; then
+            echo "### WASM Build" >> $GITHUB_STEP_SUMMARY
+            if [[ "${{ needs.build-wasm.result }}" == "success" ]]; then
+              echo "- ✅ WASM binary built successfully" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-wasm.result }}" == "failure" ]]; then
+              echo "- ❌ WASM build failed" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Web build
+          if [[ "${{ needs.validate.outputs.build_web }}" == "true" ]]; then
+            echo "### Web Build" >> $GITHUB_STEP_SUMMARY
+            if [[ "${{ needs.build-web.result }}" == "success" ]]; then
+              echo "- ✅ Web application built successfully" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-web.result }}" == "failure" ]]; then
+              echo "- ❌ Web build failed" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Neovim plugin
+          if [[ "${{ needs.validate.outputs.build_nvim }}" == "true" ]]; then
+            echo "### Neovim Plugin" >> $GITHUB_STEP_SUMMARY
+            if [[ "${{ needs.build-nvim.result }}" == "success" ]]; then
+              echo "- ✅ Plugin published to typedef.nvim" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-nvim.result }}" == "failure" ]]; then
+              echo "- ❌ Plugin build/publish failed" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Built with Manual Build Dispatch workflow*" >> $GITHUB_STEP_SUMMARY

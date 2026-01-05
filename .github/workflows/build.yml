@@ -13,6 +13,11 @@ on:
         required: false
         type: boolean
         default: false
+      build-targets:
+        description: 'Comma-separated list of build targets (cli, rpc, wasm). Empty = build all'
+        required: false
+        type: string
+        default: ''
       version:
         description: 'Version string (e.g., 0.0.5)'
         required: false
@@ -28,12 +33,69 @@ on:
         required: false
         type: string
         default: 'unknown'
+  workflow_dispatch:
+    inputs:
+      go-version:
+        description: 'Go version for builds'
+        required: false
+        type: string
+        default: '1.24.4'
+      build-all-platforms:
+        description: 'Build all platforms (true) or verify only (false)'
+        required: false
+        type: boolean
+        default: true
+      build-targets:
+        description: 'Comma-separated list of build targets (cli, rpc, wasm). Empty = build all'
+        required: false
+        type: string
+        default: ''
+      version:
+        description: 'Version string (e.g., 0.0.5)'
+        required: false
+        type: string
+        default: 'dev'
+      commit-sha:
+        description: 'Git commit SHA'
+        required: false
+        type: string
+        default: ''
+      build-time:
+        description: 'Build timestamp (RFC3339 format)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
+  prepare:
+    name: Prepare build metadata
+    runs-on: ubuntu-latest
+    outputs:
+      commit-sha: ${{ steps.metadata.outputs.commit-sha }}
+      build-time: ${{ steps.metadata.outputs.build-time }}
+    steps:
+      - name: Generate metadata
+        id: metadata
+        run: |
+          if [ -z "${{ inputs.commit-sha }}" ]; then
+            echo "commit-sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "commit-sha=${{ inputs.commit-sha }}" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -z "${{ inputs.build-time }}" ]; then
+            BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            echo "build-time=$BUILD_TIME" >> $GITHUB_OUTPUT
+          else
+            echo "build-time=${{ inputs.build-time }}" >> $GITHUB_OUTPUT
+          fi
+
   build-linux:
     name: Build CLI (Linux)
     runs-on: ubuntu-latest
-    timeout-minutes: 5 
+    timeout-minutes: 5
+    needs: prepare
+    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'cli') }} 
 
     steps:
       - uses: actions/checkout@v4
@@ -58,8 +120,8 @@ jobs:
         run: |
           make build-linux \
             VERSION="${{ inputs.version }}" \
-            COMMIT_SHA="${{ inputs.commit-sha }}" \
-            BUILD_TIME="${{ inputs.build-time }}"
+            COMMIT_SHA="${{ needs.prepare.outputs.commit-sha }}" \
+            BUILD_TIME="${{ needs.prepare.outputs.build-time }}"
 
       - name: Verify build (Linux only)
         if: ${{ !inputs.build-all-platforms }}
@@ -77,6 +139,8 @@ jobs:
     name: Build CLI (macOS)
     runs-on: macos-latest
     timeout-minutes: 5
+    needs: prepare
+    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'cli') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -101,8 +165,8 @@ jobs:
         run: |
           make build-macos \
             VERSION="${{ inputs.version }}" \
-            COMMIT_SHA="${{ inputs.commit-sha }}" \
-            BUILD_TIME="${{ inputs.build-time }}"
+            COMMIT_SHA="${{ needs.prepare.outputs.commit-sha }}" \
+            BUILD_TIME="${{ needs.prepare.outputs.build-time }}"
 
       - name: Verify build (macOS only)
         if: ${{ !inputs.build-all-platforms }}
@@ -120,6 +184,8 @@ jobs:
     name: Build WASM
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: prepare
+    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'wasm') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -141,8 +207,8 @@ jobs:
         run: |
           make build-wasm \
             VERSION="${{ inputs.version }}" \
-            COMMIT_SHA="${{ inputs.commit-sha }}" \
-            BUILD_TIME="${{ inputs.build-time }}"
+            COMMIT_SHA="${{ needs.prepare.outputs.commit-sha }}" \
+            BUILD_TIME="${{ needs.prepare.outputs.build-time }}"
 
       - name: Upload WASM artifact
         uses: actions/upload-artifact@v4
@@ -155,6 +221,8 @@ jobs:
     name: Build RPC (Linux)
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: prepare
+    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'rpc') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -179,8 +247,8 @@ jobs:
         run: |
           make build-rpc-linux \
             VERSION="${{ inputs.version }}" \
-            COMMIT_SHA="${{ inputs.commit-sha }}" \
-            BUILD_TIME="${{ inputs.build-time }}"
+            COMMIT_SHA="${{ needs.prepare.outputs.commit-sha }}" \
+            BUILD_TIME="${{ needs.prepare.outputs.build-time }}"
 
       - name: Upload RPC Linux artifacts
         if: ${{ inputs.build-all-platforms }}
@@ -194,6 +262,8 @@ jobs:
     name: Build RPC (macOS)
     runs-on: macos-latest
     timeout-minutes: 5
+    needs: prepare
+    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'rpc') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -218,8 +288,8 @@ jobs:
         run: |
           make build-rpc-macos \
             VERSION="${{ inputs.version }}" \
-            COMMIT_SHA="${{ inputs.commit-sha }}" \
-            BUILD_TIME="${{ inputs.build-time }}"
+            COMMIT_SHA="${{ needs.prepare.outputs.commit-sha }}" \
+            BUILD_TIME="${{ needs.prepare.outputs.build-time }}"
 
       - name: Upload RPC macOS artifacts
         if: ${{ inputs.build-all-platforms }}
