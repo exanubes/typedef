@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'Version string (e.g., v1.2.3)'
+        description: 'Version string (e.g., 1.2.3)'
         required: true
         type: string
       commit-sha:
@@ -93,7 +93,7 @@ jobs:
 
           git commit -m "Release plugin version ${{ inputs.version }}"
 
-          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
 
           git push origin master
 

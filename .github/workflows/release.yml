@@ -70,8 +70,8 @@ jobs:
     needs: [build, prepare-version]
     uses: ./.github/workflows/build-nvim.yml
     with:
-      version: ${{ github.ref_name }}
-      commit-sha: ${{ github.sha }}
+      version: ${{ needs.prepare-version.outputs.version }}
+      commit-sha: ${{ needs.prepare-version.outputs.commit-sha }}
       build-time: ${{ needs.prepare-version.outputs.build-time }}
     secrets: inherit
 
