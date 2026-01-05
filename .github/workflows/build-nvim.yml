@@ -4,18 +4,18 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'Version string (e.g., 1.2.3)'
+        description: "Version string (e.g., 1.2.3)"
         required: true
         type: string
       commit-sha:
-        description: 'Git commit SHA'
+        description: "Git commit SHA"
         required: true
         type: string
       build-time:
-        description: 'Build timestamp (RFC3339 format)'
+        description: "Build timestamp (RFC3339 format)"
         required: false
         type: string
-        default: ''
+        default: ""
 
 jobs:
   publish-plugin:
@@ -24,15 +24,16 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Checkout source repository 
+      - name: Checkout source repository
         uses: actions/checkout@v4
         with:
           repository: exanubes/typedef
-          ref: ${{ inputs.commit-sha }}
+          fetch-depth: 0
+          ref: ${{ github.sha }}
           path: src
           persist-credentials: false
 
-      - name: Checkout plugin repository 
+      - name: Checkout plugin repository
         uses: actions/checkout@v4
         with:
           repository: exanubes/typedef.nvim
@@ -56,12 +57,10 @@ jobs:
           COMMIT_SHORT="${COMMIT_SHORT:0:7}"
           echo "commit_short=$COMMIT_SHORT" >> $GITHUB_OUTPUT
 
-
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
 
       - name: Create release commit
         run: |
@@ -83,7 +82,7 @@ jobs:
             build   = "${{ steps.buildtime.outputs.build_time }}"
           }
           EOF
-  
+
           git add -A
 
           if git diff --cached --quiet; then
