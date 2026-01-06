@@ -5,6 +5,8 @@ local ChainReader = require("typedef.infrastructure.reader.chain")
 local Codegen = require("typedef.infrastructure.codegen")
 local InsertWriter = require("typedef.infrastructure.writer.insert")
 local BufferContextWriter = require("typedef.infrastructure.writer.buffer-context")
+local ClipboardWriter = require("typedef.infrastructure.writer.clipboard")
+local GenerateSchemaService = require("typedef.app.generate-schema")
 local M = {}
 
 ---@param server JsonRpcServer
@@ -22,9 +24,14 @@ function M.register(server)
         local panel = Panel.new()
 
         local base_writer = InsertWriter.new()
-        local output_writer = BufferContextWriter.new(original_buffer, original_window, base_writer)
+        local buffer_writer = BufferContextWriter.new(original_buffer, original_window, base_writer)
+        local clipboard_writer = ClipboardWriter.new()
 
-        local panel_service = PanelService.new(panel, input_reader, codegen_repository, output_writer)
+        --- TODO: factory
+        local generate_to_clipboard = GenerateSchemaService.new(input_reader, codegen_repository, clipboard_writer)
+        local generate_to_buffer = GenerateSchemaService.new(input_reader, codegen_repository, buffer_writer)
+
+        local panel_service = PanelService.new(panel, generate_to_clipboard, generate_to_buffer)
         panel_service:execute()
     end, {})
 end

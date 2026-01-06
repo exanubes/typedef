@@ -22,28 +22,24 @@ local function create_lines(options)
 end
 
 local M = {
-    --- @type Panel
+    ---@type Panel
     panel = nil,
-    --- @type InputReader
-    input = nil,
-    --- @type CodegenRepository
-    codegen = nil,
-    --- @type OutputWriter
-    output = nil,
+    ---@type GenerateService
+    clipboard = nil,
+    ---@type GenerateService
+    buffer = nil,
 }
 
 M.__index = M
 
 ---@param panel Panel
----@param input_reader InputReader
----@param codegen CodegenRepository
----@param output_writer OutputWriter
-function M.new(panel, input_reader, codegen, output_writer)
+---@param generate_to_buffer InputReader
+---@param generate_to_clipboard InputReader
+function M.new(panel, generate_to_clipboard, generate_to_buffer)
     return setmetatable({
         panel = panel,
-        input = input_reader,
-        codegen = codegen,
-        output = output_writer,
+        clipboard = generate_to_clipboard,
+        buffer = generate_to_buffer,
     }, M)
 end
 
@@ -60,18 +56,10 @@ function M:execute()
 
     self.panel:add_keymap("<CR>", function(event)
         if lines[event.current_line] == INSERT_BUTTON then
-            vim.notify("Generate code and insert into buffer")
-            local input = self.input:read()
             local output = output_options:selected()
-            local response = self.codegen:generate(input, "json", output)
 
-            response:on_success(function(result)
-                self.output:write(result.code)
+            self.buffer:generate(output, function()
                 self.panel:close()
-            end)
-
-            response:on_error(function(error)
-                vim.notify("ERROR(" .. error.code .. "): " .. error.message)
             end)
 
             return
@@ -83,8 +71,10 @@ function M:execute()
         end
 
         if lines[event.current_line] == CLIPBOARD_BUTTON then
-            vim.notify("Generate code and save to clipboard")
-            self.panel:close()
+            local output = output_options:selected()
+            self.clipboard:generate(output, function()
+                self.panel:close()
+            end)
             return
         end
 

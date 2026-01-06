@@ -1,3 +1,6 @@
+---@class GenerateService
+---@field generate fun(self: GenerateService, format: string, cb: fun())
+
 local Map = require("typedef.helpers.map")
 local M = {
     formats = Map.new(),
