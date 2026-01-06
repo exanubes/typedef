@@ -3,8 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags like v1.0.0
-  workflow_dispatch:  # Allow manual trigger
+      - "v*" # Trigger on version tags like v1.0.0
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   prepare-version:
@@ -45,15 +45,15 @@ jobs:
   test:
     uses: ./.github/workflows/tests.yml
     with:
-      go-version: '1.24.4'
-      node-version: '22'
+      go-version: "1.24.4"
+      node-version: "22"
 
   build:
     needs: [test, prepare-version]
     uses: ./.github/workflows/build.yml
     with:
-      go-version: '1.24.4'
-      build-all-platforms: true  # Build all platforms for releases
+      go-version: "1.24.4"
+      build-all-platforms: true # Build all platforms for releases
       version: ${{ needs.prepare-version.outputs.version }}
       commit-sha: ${{ needs.prepare-version.outputs.commit-sha }}
       build-time: ${{ needs.prepare-version.outputs.build-time }}
@@ -62,12 +62,12 @@ jobs:
     needs: build
     uses: ./.github/workflows/build-web.yml
     with:
-      node-version: '22'
-      pnpm-version: '10.11.0'
-      upload-artifacts: true  # Upload artifacts for releases
+      node-version: "22"
+      pnpm-version: "10.11.0"
+      upload-artifacts: true
 
-  build-nvim:
-    needs: [build, prepare-version]
+  publish-nvim:
+    needs: [build-web, prepare-version]
     uses: ./.github/workflows/build-nvim.yml
     with:
       version: ${{ needs.prepare-version.outputs.version }}
