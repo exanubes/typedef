@@ -67,7 +67,7 @@ function M:execute()
 
             response:on_success(function(result)
                 self.output:write(result.code)
-                -- self.panel:close()
+                self.panel:close()
             end)
 
             response:on_error(function(error)
