@@ -1,6 +1,7 @@
 local Select = { options = {} }
 Select.__index = Select
 
+---@param options string[]
 function Select.new(options)
     return setmetatable({
         options = options,
@@ -8,10 +9,12 @@ function Select.new(options)
     }, Select)
 end
 
+--- @return string
 function Select:selected()
     return self.options[self.current]
 end
 
+--- @param index integer
 function Select:select(index)
     if not index then
         return
@@ -25,6 +28,7 @@ function Select:select(index)
     self.current = index
 end
 
+--- @return string[]
 function Select:print()
     local lines = {}
 

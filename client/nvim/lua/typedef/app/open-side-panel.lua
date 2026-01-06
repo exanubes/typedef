@@ -24,13 +24,26 @@ end
 local M = {
     --- @type Panel
     panel = nil,
+    --- @type InputReader
+    input = nil,
+    --- @type CodegenRepository
+    codegen = nil,
+    --- @type OutputWriter
+    output = nil,
 }
+
 M.__index = M
 
 ---@param panel Panel
-function M.new(panel)
+---@param input_reader InputReader
+---@param codegen CodegenRepository
+---@param output_writer OutputWriter
+function M.new(panel, input_reader, codegen, output_writer)
     return setmetatable({
         panel = panel,
+        input = input_reader,
+        codegen = codegen,
+        output = output_writer,
     }, M)
 end
 
@@ -48,7 +61,19 @@ function M:execute()
     self.panel:add_keymap("<CR>", function(event)
         if lines[event.current_line] == INSERT_BUTTON then
             vim.notify("Generate code and insert into buffer")
-            self.panel:close()
+            local input = self.input:read()
+            local output = output_options:selected()
+            local response = self.codegen:generate(input, "json", output)
+
+            response:on_success(function(result)
+                self.output:write(result.code)
+                -- self.panel:close()
+            end)
+
+            response:on_error(function(error)
+                vim.notify("ERROR(" .. error.code .. "): " .. error.message)
+            end)
+
             return
         end
 

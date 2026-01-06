@@ -15,6 +15,7 @@ M.formats:set("ts", "typescript")
 ---@param input string
 ---@return string | nil
 function M.parse_format(input)
+    input = string.lower(input)
     if M.formats:has(input) then
         return M.formats:get(input)
     end
