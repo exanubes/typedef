@@ -22,7 +22,7 @@ local function create_lines(options)
 end
 
 local M = {
-    ---@type Panel
+    ---@type Component
     panel = nil,
     ---@type GenerateService
     clipboard = nil,
@@ -32,7 +32,7 @@ local M = {
 
 M.__index = M
 
----@param panel Panel
+---@param panel Component
 ---@param generate_to_buffer InputReader
 ---@param generate_to_clipboard InputReader
 function M.new(panel, generate_to_clipboard, generate_to_buffer)
@@ -83,6 +83,8 @@ function M:execute()
         self.panel:render(lines)
     end)
 
+    self.panel:open()
+    self.panel:focus()
     self.panel:render(lines)
 end
 
