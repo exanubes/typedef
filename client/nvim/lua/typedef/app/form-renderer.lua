@@ -56,27 +56,52 @@ function M:execute()
     keymap:set("1", 1)
     local format_options_offset = 4
     local format_options = Select.new({ "Go", "Typescript", "Zod", "JSDoc" })
+
+    format_options:add_keymap("1", 1)
+    format_options:add_keymap("2", 2)
+    format_options:add_keymap("3", 3)
+    format_options:add_keymap("4", 4)
+
     local lines = create_lines(format_options:print())
-    local status = "idle"
     local output = Signal.new("")
+
+    local function handle_select(option_number)
+        format_options:select(option_number)
+        lines = create_lines(format_options:print())
+        lines = List.join(lines, List.split(output:get(), "\n"))
+        self.panel:render(lines)
+    end
 
     self.panel:add_keymap("q", function()
         self.panel:close()
     end)
 
+    self.panel:add_keymap("1", function()
+        handle_select(1)
+    end)
+
+    self.panel:add_keymap("2", function()
+        handle_select(2)
+    end)
+
+    self.panel:add_keymap("3", function()
+        handle_select(3)
+    end)
+
+    self.panel:add_keymap("4", function()
+        handle_select(4)
+    end)
+
     self.panel:add_keymap("<CR>", function(event)
         if lines[event.current_line] == GENERATE_BUTTON then
-            status = "pending"
             local format = format_options:selected()
             local input = self.reader:read()
             self.codegen
                 :generate(input, "json", format)
                 :on_success(function(response)
-                    status = "success"
                     output:set(response.code)
                 end)
                 :on_error(function(error)
-                    status = "error"
                     output:set(tostring(error.code) .. ": " .. error.message)
                 end)
             return
@@ -92,10 +117,7 @@ function M:execute()
             return
         end
 
-        format_options:select(event.current_line - format_options_offset)
-        lines = create_lines(format_options:print())
-        lines = List.join(lines, List.split(output:get(), "\n"))
-        self.panel:render(lines)
+        handle_select(event.current_line - format_options_offset)
     end)
 
     output:subscribe(function(current)
