@@ -16,53 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Need full history for changelog
+          fetch-depth: 0 # Need full history for changelog
 
-      - name: Download Linux artifacts
+      - name: Download packaged CLI binaries
         uses: actions/download-artifact@v4
         with:
-          name: cli-linux
-          path: ./artifacts/linux
-
-      - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: cli-macos
-          path: ./artifacts/darwin
-
-      - name: Download RPC Linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: rpc-linux
-          path: ./artifacts/linux
-
-      - name: Download RPC macOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: rpc-macos
-          path: ./artifacts/darwin
-
-      - name: Make packaging script executable
-        run: chmod +x scripts/package-binary.sh
-
-      - name: Prepare release assets
-        run: |
-          mkdir -p release
-
-          # Package CLI binaries
-          ./scripts/package-binary.sh ./artifacts/linux/amd64/typedef-cli linux amd64 ./release
-          ./scripts/package-binary.sh ./artifacts/linux/arm64/typedef-cli linux arm64 ./release
-          ./scripts/package-binary.sh ./artifacts/darwin/amd64/typedef-cli darwin amd64 ./release
-          ./scripts/package-binary.sh ./artifacts/darwin/arm64/typedef-cli darwin arm64 ./release
-
-          # Package RPC binaries
-          ./scripts/package-binary.sh ./artifacts/linux/amd64/typedef-rpc linux amd64 ./release
-          ./scripts/package-binary.sh ./artifacts/linux/arm64/typedef-rpc linux arm64 ./release
-          ./scripts/package-binary.sh ./artifacts/darwin/amd64/typedef-rpc darwin amd64 ./release
-          ./scripts/package-binary.sh ./artifacts/darwin/arm64/typedef-rpc darwin arm64 ./release
-
-          cd release
-          sha256sum typedef-*.tar.gz > checksums.txt
+          name: cli-packages
+          path: ./release
 
       - name: Generate changelog
         id: changelog

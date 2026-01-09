@@ -4,67 +4,67 @@ on:
   workflow_call:
     inputs:
       go-version:
-        description: 'Go version for builds'
+        description: "Go version for builds"
         required: false
         type: string
-        default: '1.24.4'
+        default: "1.24.4"
       build-all-platforms:
-        description: 'Build all platforms (true) or verify only (false)'
+        description: "Build all platforms (true) or verify only (false)"
         required: false
         type: boolean
         default: false
       build-targets:
-        description: 'Comma-separated list of build targets (cli, rpc, wasm). Empty = build all'
+        description: "Comma-separated list of build targets (cli, rpc, wasm). Empty = build all"
         required: false
         type: string
-        default: ''
+        default: ""
       version:
-        description: 'Version string (e.g., 0.0.5)'
+        description: "Version string (e.g., 0.0.5)"
         required: false
         type: string
-        default: 'dev'
+        default: "dev"
       commit-sha:
-        description: 'Git commit SHA'
+        description: "Git commit SHA"
         required: false
         type: string
-        default: 'unknown'
+        default: "unknown"
       build-time:
-        description: 'Build timestamp (RFC3339 format)'
+        description: "Build timestamp (RFC3339 format)"
         required: false
         type: string
-        default: 'unknown'
+        default: "unknown"
   workflow_dispatch:
     inputs:
       go-version:
-        description: 'Go version for builds'
+        description: "Go version for builds"
         required: false
         type: string
-        default: '1.24.4'
+        default: "1.24.4"
       build-all-platforms:
-        description: 'Build all platforms (true) or verify only (false)'
+        description: "Build all platforms (true) or verify only (false)"
         required: false
         type: boolean
         default: true
       build-targets:
-        description: 'Comma-separated list of build targets (cli, rpc, wasm). Empty = build all'
+        description: "Comma-separated list of build targets (cli, rpc, wasm). Empty = build all"
         required: false
         type: string
-        default: ''
+        default: ""
       version:
-        description: 'Version string (e.g., 0.0.5)'
+        description: "Version string (e.g., 0.0.5)"
         required: false
         type: string
-        default: 'dev'
+        default: "dev"
       commit-sha:
-        description: 'Git commit SHA'
+        description: "Git commit SHA"
         required: false
         type: string
-        default: ''
+        default: ""
       build-time:
-        description: 'Build timestamp (RFC3339 format)'
+        description: "Build timestamp (RFC3339 format)"
         required: false
         type: string
-        default: ''
+        default: ""
 
 jobs:
   prepare:
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: prepare
-    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'cli') }} 
+    if: ${{ inputs.build-targets == '' || contains(inputs.build-targets, 'cli') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -297,4 +297,66 @@ jobs:
         with:
           name: rpc-macos
           path: dist/rpc/darwin/*
+          retention-days: 1
+
+  package:
+    name: Package binaries and generate checksums
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [build-linux, build-macos, build-rpc-linux, build-rpc-macos]
+    if: ${{ inputs.build-all-platforms }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-linux
+          path: ./artifacts/linux
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-macos
+          path: ./artifacts/darwin
+
+      - name: Make packaging script executable
+        run: chmod +x scripts/package-binary.sh
+
+      - name: Package binaries
+        run: |
+          mkdir -p release
+
+          # Package CLI binaries
+          ./scripts/package-binary.sh ./artifacts/linux/amd64/typedef-cli linux amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/linux/arm64/typedef-cli linux arm64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/amd64/typedef-cli darwin amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/arm64/typedef-cli darwin arm64 ./release
+
+          # Package RPC binaries
+          ./scripts/package-binary.sh ./artifacts/linux/amd64/typedef-rpc linux amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/linux/arm64/typedef-rpc linux arm64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/amd64/typedef-rpc darwin amd64 ./release
+          ./scripts/package-binary.sh ./artifacts/darwin/arm64/typedef-rpc darwin arm64 ./release
+
+      - name: Generate checksums
+        run: |
+          cd release
+          sha256sum typedef-*.tar.gz > checksums.txt
+          cat checksums.txt
+
+      - name: Upload packaged CLI binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-packages
+          path: release/typedef-cli-*.tar.gz
+          retention-days: 1
+
+      - name: Upload checksums artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: release/checksums.txt
           retention-days: 1

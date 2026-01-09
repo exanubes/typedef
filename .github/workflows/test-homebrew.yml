@@ -1,0 +1,56 @@
+name: Build Homebrew Formulae
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version string (e.g., 1.2.3)"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version string (e.g., 1.2.3)"
+        required: true
+        type: string
+        default: "dev"
+
+jobs:
+  test-homebrew-install:
+    name: Test Homebrew Installation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-linux
+          path: ./dist/cli/linux
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-macos
+          path: ./dist/cli/darwin
+
+      - name: Verify artifact structure
+        run: |
+          echo "Verifying downloaded artifacts..."
+          ls -R dist/cli/
+          for path in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64; do
+            if [ ! -f "dist/cli/$path/typedef-cli" ]; then
+              echo "Error: Missing binary at dist/cli/$path/typedef-cli"
+              exit 1
+            fi
+          done
+
+      - name: Make test script executable
+        run: chmod +x client/homebrew/scripts/test-formula-local.sh
+
+      - name: Run Homebrew installation test
+        run: |
+          make test-homebrew-install VERSION=${{ inputs.version }}

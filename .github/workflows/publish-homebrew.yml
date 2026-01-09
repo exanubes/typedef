@@ -1,0 +1,107 @@
+name: Publish Homebrew Formula
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version string (e.g., 1.2.3)"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version string (e.g., 1.2.3)"
+        required: true
+        type: string
+        default: "dev"
+
+jobs:
+  publish-formula:
+    name: Publish to homebrew-typedef
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: exanubes/typedef
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          path: src
+          persist-credentials: false
+
+      - name: Checkout formula repository
+        uses: actions/checkout@v4
+        with:
+          repository: exanubes/homebrew-typedef
+          token: ${{ secrets.PLUGIN_REPO_PAT }}
+          path: artifact
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Download checksums artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: checksums
+          path: ./
+
+      - name: Verify checksums
+        run: |
+          if [ ! -f checksums.txt ]; then
+            echo "Error: checksums.txt not found"
+            exit 1
+          fi
+
+          echo "Downloaded checksums.txt:"
+          cat checksums.txt
+
+      - name: Generate Homebrew formula
+        run: |
+          chmod +x src/client/homebrew/scripts/generate-formula.sh
+
+          src/client/homebrew/scripts/generate-formula.sh \
+            "${{ inputs.version }}" \
+            checksums.txt \
+            src/client/homebrew/Formula/typedef.rb
+
+          if [ ! -f src/client/homebrew/Formula/typedef.rb ]; then
+            echo "Error: Formula file was not generated"
+            exit 1
+          fi
+
+          echo "Generated formula:"
+          cat src/client/homebrew/Formula/typedef.rb
+
+      - name: Create release commit
+        run: |
+          test -d src/client/homebrew || {
+            echo "client/homebrew not found - aborting"
+            exit 1
+          }
+
+          cd artifact
+          git checkout -B master
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+
+          cp -r ../src/client/homebrew/. .
+
+          rm -f Formula/typedef.rb.template
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Release produced no changes — aborting"
+            exit 1
+          fi
+
+          git commit -m "Release Homebrew formula version ${{ inputs.version }}"
+
+          git tag "v${{ inputs.version }}"
+
+          git push origin master
+
+          git push origin --tags

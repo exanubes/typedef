@@ -58,8 +58,14 @@ jobs:
       commit-sha: ${{ needs.prepare-version.outputs.commit-sha }}
       build-time: ${{ needs.prepare-version.outputs.build-time }}
 
+  test-homebrew:
+    needs: [build, prepare-version]
+    uses: ./.github/workflows/test-homebrew.yml
+    with:
+      version: ${{ needs.prepare-version.outputs.version }}
+
   build-web:
-    needs: build
+    needs: [test-homebrew]
     uses: ./.github/workflows/build-web.yml
     with:
       node-version: "22"
@@ -68,7 +74,7 @@ jobs:
 
   publish-nvim:
     needs: [build-web, prepare-version]
-    uses: ./.github/workflows/build-nvim.yml
+    uses: ./.github/workflows/publish-nvim.yml
     with:
       version: ${{ needs.prepare-version.outputs.version }}
       commit-sha: ${{ needs.prepare-version.outputs.commit-sha }}
@@ -81,8 +87,16 @@ jobs:
     permissions:
       contents: write
 
+  publish-homebrew:
+    needs: [build, prepare-version]
+    uses: ./.github/workflows/publish-homebrew.yml
+    with:
+      version: ${{ needs.prepare-version.outputs.version }}
+    permissions:
+      contents: write
+
   create-release:
-    needs: publish-pages
+    needs: [publish-pages, publish-nvim, publish-homebrew]
     uses: ./.github/workflows/create-release-notes.yml
     permissions:
       contents: write

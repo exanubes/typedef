@@ -4,8 +4,13 @@ class Typedef < Formula
   version "{{VERSION}}"
   license "MIT"
 
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
+
   on_macos do
-    if Hardware::CPU.arm?
+    if Hardware::CPU.arm64?
       url "https://github.com/exanubes/typedef/releases/download/v{{VERSION}}/typedef-cli-darwin-arm64.tar.gz"
       sha256 "{{SHA256_DARWIN_ARM64}}"
     end
@@ -17,7 +22,7 @@ class Typedef < Formula
   end
 
   on_linux do
-    if Hardware::CPU.arm?
+    if Hardware::CPU.arm64?
       url "https://github.com/exanubes/typedef/releases/download/v{{VERSION}}/typedef-cli-linux-arm64.tar.gz"
       sha256 "{{SHA256_LINUX_ARM64}}"
     end
@@ -33,7 +38,7 @@ class Typedef < Formula
   end
 
   test do
-    output = shell_output("#{bin}/typedef --format go --input '{\"test\": 1}' --target cli 2>&1")
-    assert_match "type Root struct", output
+    output = shell_output("#{bin}/typedef --format go --input '{\"test\": 1}' --target cli")
+    assert_match(/type\s+Root\s+struct/, output)
   end
 end
