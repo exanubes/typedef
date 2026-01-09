@@ -1,4 +1,4 @@
-.PHONY: start-web build-wasm build-cli build-linux build-macos build-wasm build-web build-web-ci build-rpc-linux build-rpc-macos
+.PHONY: start-web build-wasm build-cli build-linux build-macos build-wasm build-web build-web-ci build-rpc-linux build-rpc-macos test-homebrew-formula test-homebrew-install
 
 # Build-time variables (can be overridden via make VAR=value)
 VERSION ?= dev
@@ -36,3 +36,15 @@ build-rpc-macos:
 	mkdir -p dist/rpc/darwin/amd64 dist/rpc/darwin/arm64
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "$(BUILD_FLAGS)" -o dist/rpc/darwin/amd64/typedef-rpc ./cmd/rpc
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(BUILD_FLAGS)" -o dist/rpc/darwin/arm64/typedef-rpc ./cmd/rpc
+
+build-cli: build-linux build-macos
+
+test-homebrew-formula: build-cli
+	@echo "Testing Homebrew formula..."
+	chmod +x client/homebrew/scripts/test-formula-local.sh
+	./client/homebrew/scripts/test-formula-local.sh $(VERSION)
+
+test-homebrew-install: build-cli
+	@echo "Testing Homebrew formula with installation..."
+	chmod +x client/homebrew/scripts/test-formula-local.sh
+	./client/homebrew/scripts/test-formula-local.sh $(VERSION) --install

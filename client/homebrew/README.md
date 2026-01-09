@@ -1,0 +1,309 @@
+# Homebrew Distribution for typedef
+
+This directory contains the Homebrew formula template and scripts for distributing typedef via Homebrew.
+
+## Structure
+
+```
+client/homebrew/
+├── Formula/
+│   └── typedef.rb.template    # Homebrew formula template with placeholders
+├── scripts/
+│   └── generate-formula.sh    # Script to generate final formula with checksums
+└── README.md                  # This file
+```
+
+## How It Works
+
+### Formula Template
+
+The `typedef.rb.template` file is a Homebrew formula that uses placeholder variables for dynamic values:
+
+- `{{VERSION}}` - Release version number (e.g., 0.0.15)
+- `{{SHA256_DARWIN_ARM64}}` - Checksum for macOS ARM64 binary
+- `{{SHA256_DARWIN_AMD64}}` - Checksum for macOS AMD64 (Intel) binary
+- `{{SHA256_LINUX_ARM64}}` - Checksum for Linux ARM64 binary
+- `{{SHA256_LINUX_AMD64}}` - Checksum for Linux AMD64 (x86_64) binary
+
+### Platform Support
+
+The formula supports multiple platforms using Homebrew's platform detection:
+
+**macOS:**
+- Apple Silicon (ARM64): darwin-arm64
+- Intel (AMD64): darwin-amd64
+
+**Linux:**
+- ARM64: linux-arm64
+- x86_64 (AMD64): linux-amd64
+
+The formula automatically detects the user's platform and architecture using `Hardware::CPU` and downloads the appropriate pre-built binary from GitHub releases.
+
+### Generation Script
+
+The `generate-formula.sh` script:
+
+1. Takes a version number and checksums file as input
+2. Parses the checksums.txt file from GitHub releases
+3. Extracts SHA256 checksums for all 4 platform binaries
+4. Replaces placeholders in the template
+5. Outputs a complete, ready-to-use Homebrew formula
+
+## Local Testing
+
+### Prerequisites
+
+- Homebrew installed on your system
+- Access to typedef GitHub releases (public repository)
+- Shell environment with bash and curl
+
+### Step 1: Download Checksums
+
+Download the checksums file from the latest typedef release:
+
+```bash
+curl -L -o /tmp/checksums.txt \
+  https://github.com/exanubes/typedef/releases/download/v0.0.15/checksums.txt
+```
+
+Replace `v0.0.15` with the version you want to test.
+
+### Step 2: Generate the Formula
+
+Run the generation script:
+
+```bash
+cd /Users/exanubes/Demo/typedef
+
+./client/homebrew/scripts/generate-formula.sh \
+  0.0.15 \
+  /tmp/checksums.txt \
+  /tmp/typedef.rb
+```
+
+This will create a complete formula file at `/tmp/typedef.rb`.
+
+### Step 3: Verify the Formula
+
+Check the generated formula content:
+
+```bash
+cat /tmp/typedef.rb
+```
+
+Verify that:
+- Version is correct
+- All 4 SHA256 checksums are present and non-empty
+- URLs point to the correct GitHub release
+
+### Step 4: Audit the Formula
+
+Run Homebrew's audit tool to check for syntax errors:
+
+```bash
+brew audit --new-formula /tmp/typedef.rb
+```
+
+### Step 5: Install Locally
+
+Install the formula locally for testing:
+
+```bash
+brew install /tmp/typedef.rb
+```
+
+### Step 6: Test the Installation
+
+Verify the binary is installed:
+
+```bash
+which typedef
+# macOS Apple Silicon: /opt/homebrew/bin/typedef
+# macOS Intel: /usr/local/bin/typedef
+# Linux: /home/linuxbrew/.linuxbrew/bin/typedef (or ~/.linuxbrew/bin/typedef)
+```
+
+Test basic functionality:
+
+```bash
+typedef --format go --input '{"name": "John", "age": 30}' --target cli
+```
+
+Run the formula's test block:
+
+```bash
+brew test typedef
+```
+
+Check version information:
+
+```bash
+typedef version
+```
+
+### Step 7: Cleanup
+
+Uninstall when done testing:
+
+```bash
+brew uninstall typedef
+```
+
+## Automated Local Testing (Makefile)
+
+For convenience, you can use the Makefile targets to automate the entire testing process. This is especially useful before releasing a new version.
+
+### Prerequisites
+
+- Homebrew installed on your system
+- Build tools configured (Go, make)
+
+### Usage
+
+**Test formula generation only:**
+
+```bash
+make test-homebrew-formula
+```
+
+This will:
+1. Build CLI binaries for all platforms (darwin and linux, amd64 and arm64)
+2. Package binaries into tar.gz archives
+3. Generate checksums.txt
+4. Generate the Homebrew formula
+5. Validate Ruby syntax
+6. Display the generated formula
+
+**Test with a specific version:**
+
+```bash
+make test-homebrew-formula VERSION=0.0.16
+```
+
+**Test with installation:**
+
+```bash
+make test-homebrew-install VERSION=0.0.16
+```
+
+This performs all the steps above, then offers to install and test the formula locally.
+
+### What Happens
+
+The automated testing:
+
+1. Checks that local builds exist (or builds them)
+2. Packages binaries exactly like the release process
+3. Generates checksums matching the production format
+4. Creates a formula in a temporary directory
+5. Validates the formula syntax
+6. Shows you the complete formula
+7. (Optional) Tests actual installation
+
+All test artifacts are placed in a temporary directory that you can clean up after testing.
+
+### Example Workflow
+
+Before creating a release:
+
+```bash
+# Test the formula with your next version number
+make test-homebrew-formula VERSION=0.0.16
+
+# Review the output and generated formula
+# If everything looks good, optionally test installation
+make test-homebrew-install VERSION=0.0.16
+
+# If tests pass, proceed with creating the actual GitHub release
+```
+
+## Binary Installation Details
+
+The formula downloads the appropriate tar.gz archive for the user's platform, which contains a binary named `typedef-cli`. During installation, the formula renames it to `typedef` for a cleaner user experience:
+
+```ruby
+bin.install "typedef-cli" => "typedef"
+```
+
+This allows users to run the tool simply as `typedef` instead of `typedef-cli`.
+
+## Checksums File Format
+
+The `checksums.txt` file from GitHub releases uses the format:
+
+```
+<sha256>  <filename>
+```
+
+For example:
+
+```
+abc123...  typedef-cli-darwin-arm64.tar.gz
+def456...  typedef-cli-darwin-amd64.tar.gz
+ghi789...  typedef-cli-linux-arm64.tar.gz
+jkl012...  typedef-cli-linux-amd64.tar.gz
+```
+
+The generation script uses `grep` and `awk` to extract each checksum:
+
+```bash
+grep "typedef-cli-darwin-arm64.tar.gz" checksums.txt | awk '{print $1}'
+```
+
+## Version Format
+
+- **Git tags:** Use format `vX.X.X` (with 'v' prefix, e.g., `v0.0.15`)
+- **Formula version:** Uses `X.X.X` (without 'v' prefix, e.g., `0.0.15`)
+- **Download URLs:** Use `v${VERSION}` (with 'v' prefix in the URL)
+
+## Future Automation
+
+This initial implementation focuses on the formula structure and local testing. Future enhancements will include:
+
+- GitHub Actions workflow to automatically generate and publish formula updates
+- Integration with the release.yml workflow
+- Automated push to the `homebrew-typedef` tap repository
+- Automatic version updates when new releases are created
+
+## Troubleshooting
+
+### Missing Checksums
+
+If the script reports missing checksums, verify:
+
+1. The checksums.txt file was downloaded correctly
+2. All 4 platform binaries exist in the release
+3. The filename format matches what the script expects
+
+### Formula Audit Failures
+
+If `brew audit` reports issues:
+
+1. Check Ruby syntax in the template
+2. Verify all URLs are accessible
+3. Ensure SHA256 checksums are 64 hexadecimal characters
+4. Check that the test block is valid
+
+### Installation Failures
+
+If `brew install` fails:
+
+1. Check network connectivity to GitHub
+2. Verify the release exists and is public
+3. Ensure the tar.gz archive contains the `typedef-cli` binary
+4. Check Homebrew logs: `brew gist-logs typedef`
+
+## Contributing
+
+When modifying the formula:
+
+1. Edit the template file (`Formula/typedef.rb.template`)
+2. Test locally using the steps above
+3. Ensure the formula works on multiple platforms (if possible)
+4. Update this README if the structure or process changes
+
+## References
+
+- [Homebrew Formula Cookbook](https://docs.brew.sh/Formula-Cookbook)
+- [Homebrew Ruby API Documentation](https://rubydoc.brew.sh/Formula)
+- [Creating and Maintaining a Tap](https://docs.brew.sh/How-to-Create-and-Maintain-a-Tap)
