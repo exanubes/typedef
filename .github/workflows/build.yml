@@ -310,16 +310,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Linux artifacts
+      - name: Download CLI Linux artifacts
         uses: actions/download-artifact@v4
         with:
           name: cli-linux
           path: ./artifacts/linux
 
-      - name: Download macOS artifacts
+      - name: Download CLI macOS artifacts
         uses: actions/download-artifact@v4
         with:
           name: cli-macos
+          path: ./artifacts/darwin
+
+      - name: Download RPC Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rpc-linux
+          path: ./artifacts/linux
+
+      - name: Download RPC macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rpc-macos
           path: ./artifacts/darwin
 
       - name: Make packaging script executable
