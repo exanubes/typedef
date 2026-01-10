@@ -51,7 +51,25 @@ go build -o typedef main.go
 
 ## Installation
 
-### Option 1: Download Pre-built Binary
+### Option 1: Install via Homebrew (macOS/Linux)
+
+The easiest way to install typedef on macOS or Linux:
+
+```bash
+brew install exanubes/typedef/typedef
+```
+
+Verify installation:
+```bash
+typedef version 
+# {
+#   "build_time": "2026-01-10T14:29:40Z",
+#   "commit_sha": "b33e9f0",
+#   "version": "0.0.21"
+# }
+```
+
+### Option 2: Download Pre-built Binary
 
 Download the latest release for your platform from [GitHub Releases](https://github.com/exanubes/typedef/releases):
 
@@ -85,7 +103,7 @@ wget https://github.com/exanubes/typedef/releases/latest/download/checksums.txt
 sha256sum -c checksums.txt --ignore-missing
 ```
 
-### Option 2: Build from Source
+### Option 3: Build from Source
 
 **Prerequisites:** Go 1.24.4 or higher
 

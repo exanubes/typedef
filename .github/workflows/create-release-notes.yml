@@ -24,6 +24,12 @@ jobs:
           name: cli-packages
           path: ./release
 
+      - name: Download packaged RPC binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: rpc-packages
+          path: ./release
+
       - name: Download checksums artifact
         uses: actions/download-artifact@v4
         with:
