@@ -94,6 +94,7 @@ jobs:
       version: ${{ needs.prepare-version.outputs.version }}
     permissions:
       contents: write
+    secrets: inherit
 
   create-release:
     needs: [publish-pages, publish-nvim, publish-homebrew]
