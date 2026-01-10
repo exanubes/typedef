@@ -1,4 +1,4 @@
-.PHONY: start-web build-wasm build-cli build-linux build-macos build-wasm build-web build-web-ci build-rpc-linux build-rpc-macos test-homebrew-formula test-homebrew-install
+.PHONY: start-web build-wasm build-cli build-linux build-macos build-wasm build-web build-web-ci build-rpc-linux build-rpc-macos test-homebrew-formula test-homebrew-install test-homebrew-formula-ci test-homebrew-install-ci
 
 # Build-time variables (can be overridden via make VAR=value)
 VERSION ?= dev
@@ -48,3 +48,13 @@ test-homebrew-install: build-cli
 	@echo "Testing Homebrew formula with installation..."
 	chmod +x client/homebrew/scripts/test-formula-local.sh
 	./client/homebrew/scripts/test-formula-local.sh $(VERSION) --install
+
+test-homebrew-formula-ci:
+	@echo "Testing Homebrew formula generation with pre-packaged binaries (CI mode)..."
+	chmod +x client/homebrew/scripts/test-formula-ci.sh
+	./client/homebrew/scripts/test-formula-ci.sh $(VERSION) ./release
+
+test-homebrew-install-ci:
+	@echo "Testing Homebrew formula with pre-packaged binaries (CI mode)..."
+	chmod +x client/homebrew/scripts/test-formula-ci.sh
+	./client/homebrew/scripts/test-formula-ci.sh $(VERSION) ./release --install

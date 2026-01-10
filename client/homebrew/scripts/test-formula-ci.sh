@@ -2,10 +2,18 @@
 set -e
 
 VERSION="${1:-dev}"
+PACKAGES_DIR="${2:-.}"
 INSTALL_TEST=false
 
-if [ "$2" = "--install" ]; then
+if [ "$3" = "--install" ]; then
   INSTALL_TEST=true
+fi
+
+# Validate inputs
+if [ -z "$VERSION" ]; then
+  echo "Error: VERSION argument is required"
+  echo "Usage: $0 <version> <packages_dir> [--install]"
+  exit 1
 fi
 
 # Check if brew is available when installation test is requested
@@ -14,44 +22,43 @@ if [ "$INSTALL_TEST" = true ] && ! command -v brew &> /dev/null; then
   exit 1
 fi
 
-# Check if local builds exist
-echo "Checking for local builds..."
-for path in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64; do
-  if [ ! -f "dist/cli/$path/typedef-cli" ]; then
-    echo "Error: Missing build at dist/cli/$path/typedef-cli"
-    echo "Run 'make build-cli' to build all platforms first"
+# Validate packages directory exists
+if [ ! -d "$PACKAGES_DIR" ]; then
+  echo "Error: Packages directory not found: $PACKAGES_DIR"
+  exit 1
+fi
+
+# Validate checksums file exists
+CHECKSUMS_FILE="$PACKAGES_DIR/checksums.txt"
+if [ ! -f "$CHECKSUMS_FILE" ]; then
+  echo "Error: Checksums file not found at $CHECKSUMS_FILE"
+  exit 1
+fi
+
+# Validate all required packages exist
+echo "Validating packaged binaries..."
+for os_arch in darwin-amd64 darwin-arm64 linux-amd64 linux-arm64; do
+  PACKAGE="$PACKAGES_DIR/typedef-cli-$os_arch.tar.gz"
+  if [ ! -f "$PACKAGE" ]; then
+    echo "Error: Missing package: $PACKAGE"
     exit 1
   fi
 done
 
-# Create temp directory for testing
+echo "All packages validated successfully"
+echo "Checksums file:"
+cat "$CHECKSUMS_FILE"
+
+# Create temp directory for formula
 TEST_DIR=$(mktemp -d)
 echo "Using test directory: $TEST_DIR"
 
-# Package binaries into tar.gz (similar to release process)
-echo "Packaging binaries..."
-for os_arch in darwin-amd64 darwin-arm64 linux-amd64 linux-arm64; do
-  os=$(echo $os_arch | cut -d- -f1)
-  arch=$(echo $os_arch | cut -d- -f2)
-
-  tar -czf "$TEST_DIR/typedef-cli-$os_arch.tar.gz" \
-    -C "dist/cli/$os/$arch" typedef-cli
-done
-
-# Generate checksums
-echo "Generating checksums..."
-cd "$TEST_DIR"
-shasum -a 256 typedef-cli-*.tar.gz > checksums.txt
-cd - > /dev/null
-
-echo "Checksums generated:"
-cat "$TEST_DIR/checksums.txt"
-
-# Generate formula
+# Generate formula using existing script
 echo "Generating Homebrew formula..."
-./client/homebrew/scripts/generate-formula.sh \
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$SCRIPT_DIR/generate-formula.sh" \
   "$VERSION" \
-  "$TEST_DIR/checksums.txt" \
+  "$CHECKSUMS_FILE" \
   "$TEST_DIR/typedef.rb"
 
 echo "Formula generated at: $TEST_DIR/typedef.rb"
@@ -79,14 +86,17 @@ if [ "$INSTALL_TEST" = true ]; then
   echo "Checking for existing tap..."
   brew untap "$TAP_NAME" 2>&1 | grep -v "Error: No available tap" || true
 
-  # Create new tap without git repo (--no-git flag)
+  # Create new tap without git repo
   echo "Creating tap directory structure..."
   brew tap-new "$TAP_NAME" --no-git
   TAP_PATH="$(brew --repository)/Library/Taps/exanubes/homebrew-typedef-test"
 
+  # Get absolute path to packages directory for file:// URLs
+  PACKAGES_ABS_PATH="$(cd "$PACKAGES_DIR" && pwd)"
+
   # Copy formula with local file URLs and rename binary to typedef-test
   echo "Installing formula into tap..."
-  sed -e "s|https://github.com/exanubes/typedef/releases/download/v$VERSION/|file://$TEST_DIR/|g" \
+  sed -e "s|https://github.com/exanubes/typedef/releases/download/v$VERSION/|file://$PACKAGES_ABS_PATH/|g" \
       -e 's|bin.install "typedef-cli" => "typedef"|bin.install "typedef-cli" => "typedef-test"|g' \
     "$TEST_DIR/typedef.rb" > "$TAP_PATH/Formula/typedef.rb"
 

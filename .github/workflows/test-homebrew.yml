@@ -25,32 +25,45 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Linux artifacts
+      - name: Download packaged CLI binaries
         uses: actions/download-artifact@v4
         with:
-          name: cli-linux
-          path: ./dist/cli/linux
+          name: cli-packages
+          path: ./release
 
-      - name: Download macOS artifacts
+      - name: Download checksums
         uses: actions/download-artifact@v4
         with:
-          name: cli-macos
-          path: ./dist/cli/darwin
+          name: checksums
+          path: ./release
 
-      - name: Verify artifact structure
+      - name: Verify packaged artifacts
         run: |
-          echo "Verifying downloaded artifacts..."
-          ls -R dist/cli/
-          for path in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64; do
-            if [ ! -f "dist/cli/$path/typedef-cli" ]; then
-              echo "Error: Missing binary at dist/cli/$path/typedef-cli"
+          echo "Verifying downloaded packages..."
+          ls -la release/
+          cat release/checksums.txt
+
+          # Validate all required packages exist
+          for os_arch in darwin-amd64 darwin-arm64 linux-amd64 linux-arm64; do
+            if [ ! -f "release/typedef-cli-$os_arch.tar.gz" ]; then
+              echo "Error: Missing package release/typedef-cli-$os_arch.tar.gz"
               exit 1
             fi
           done
 
+          if [ ! -f "release/checksums.txt" ]; then
+            echo "Error: Missing checksums.txt"
+            exit 1
+          fi
+
+          echo "All required packages validated"
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
       - name: Make test script executable
-        run: chmod +x client/homebrew/scripts/test-formula-local.sh
+        run: chmod +x client/homebrew/scripts/test-formula-ci.sh
 
       - name: Run Homebrew installation test
         run: |
-          make test-homebrew-install VERSION=${{ inputs.version }}
+          make test-homebrew-install-ci VERSION=${{ inputs.version }}
