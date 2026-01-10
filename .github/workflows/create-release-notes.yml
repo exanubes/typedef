@@ -24,6 +24,12 @@ jobs:
           name: cli-packages
           path: ./release
 
+      - name: Download checksums artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: checksums
+          path: ./release
+
       - name: Generate changelog
         id: changelog
         run: |
