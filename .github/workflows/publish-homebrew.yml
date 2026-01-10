@@ -90,6 +90,7 @@ jobs:
           cp -r ../src/client/homebrew/. .
 
           rm -f Formula/typedef.rb.template
+          rm -rf scripts
 
           git add -A
 

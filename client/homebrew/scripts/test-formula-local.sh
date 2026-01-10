@@ -63,42 +63,40 @@ if [ "$INSTALL_TEST" = true ]; then
   echo ""
   echo "Testing installation..."
   echo "Note: This will install typedef-test locally (test binary)"
-  read -p "Continue with installation test? (y/N) " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Create temporary tap for testing
-    TAP_NAME="exanubes/typedef-test"
-    echo "Creating temporary tap: $TAP_NAME"
+  echo "Proceeding with installation test..."
 
-    # Remove tap if it exists (from previous failed run)
-    brew untap "$TAP_NAME" 2>/dev/null || true
+  # Create temporary tap for testing
+  TAP_NAME="exanubes/typedef-test"
+  echo "Creating temporary tap: $TAP_NAME"
 
-    # Create new tap without git repo (--no-git flag)
-    brew tap-new "$TAP_NAME" --no-git
-    TAP_PATH="$(brew --repository)/Library/Taps/exanubes/homebrew-typedef-test"
+  # Remove tap if it exists (from previous failed run)
+  brew untap "$TAP_NAME" 2>/dev/null || true
 
-    # Copy formula with local file URLs and rename binary to typedef-test
-    echo "Installing formula into tap..."
-    sed -e "s|https://github.com/exanubes/typedef/releases/download/v$VERSION/|file://$TEST_DIR/|g" \
-        -e 's|bin.install "typedef-cli" => "typedef"|bin.install "typedef-cli" => "typedef-test"|g' \
-      "$TEST_DIR/typedef.rb" > "$TAP_PATH/Formula/typedef.rb"
+  # Create new tap without git repo (--no-git flag)
+  brew tap-new "$TAP_NAME" --no-git
+  TAP_PATH="$(brew --repository)/Library/Taps/exanubes/homebrew-typedef-test"
 
-    # Install from tap
-    echo "Installing typedef-test from tap..."
-    brew install "$TAP_NAME/typedef"
+  # Copy formula with local file URLs and rename binary to typedef-test
+  echo "Installing formula into tap..."
+  sed -e "s|https://github.com/exanubes/typedef/releases/download/v$VERSION/|file://$TEST_DIR/|g" \
+      -e 's|bin.install "typedef-cli" => "typedef"|bin.install "typedef-cli" => "typedef-test"|g' \
+    "$TEST_DIR/typedef.rb" > "$TAP_PATH/Formula/typedef.rb"
 
-    # Test installed binary
-    echo "Testing installed binary..."
-    typedef-test version
-    typedef-test --format go --input '{"test": 1}' --target cli
+  # Install from tap
+  echo "Installing typedef-test from tap..."
+  brew install "$TAP_NAME/typedef"
 
-    # Cleanup
-    echo "Cleaning up tap..."
-    brew uninstall typedef
-    brew untap "$TAP_NAME"
+  # Test installed binary
+  echo "Testing installed binary..."
+  typedef-test version
+  typedef-test --format go --input '{"test": 1}' --target cli
 
-    echo "Installation test completed successfully"
-  fi
+  # Cleanup
+  echo "Cleaning up tap..."
+  brew uninstall typedef
+  brew untap "$TAP_NAME"
+
+  echo "Installation test completed successfully"
 fi
 
 echo ""

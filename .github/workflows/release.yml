@@ -65,7 +65,7 @@ jobs:
       version: ${{ needs.prepare-version.outputs.version }}
 
   build-web:
-    needs: [test-homebrew]
+    needs: [build]
     uses: ./.github/workflows/build-web.yml
     with:
       node-version: "22"
@@ -73,7 +73,7 @@ jobs:
       upload-artifacts: true
 
   publish-nvim:
-    needs: [build-web, prepare-version]
+    needs: [build-web, test-homebrew, prepare-version]
     uses: ./.github/workflows/publish-nvim.yml
     with:
       version: ${{ needs.prepare-version.outputs.version }}
@@ -82,13 +82,13 @@ jobs:
     secrets: inherit
 
   publish-pages:
-    needs: build-web
+    needs: [build-web, test-homebrew]
     uses: ./.github/workflows/publish-pages.yml
     permissions:
       contents: write
 
   publish-homebrew:
-    needs: [build, prepare-version]
+    needs: [build-web, test-homebrew, prepare-version]
     uses: ./.github/workflows/publish-homebrew.yml
     with:
       version: ${{ needs.prepare-version.outputs.version }}
